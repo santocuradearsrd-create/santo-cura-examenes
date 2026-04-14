@@ -998,7 +998,7 @@ async function profeDuplicarExamen(id){
   if(error){toast('Error',false);return;}
   const copia={...data};
   delete copia.id;copia.titulo='[Copia] '+copia.titulo;copia.activo=false;copia.created_at=undefined;copia.updated_at=undefined;
-  const r=await rpcProfe('profesor_upsert_examen',{p_id:null,p_datos:copia});
+  const r=await rpcProfe('profesor_upsert_examen',{p_id:'',p_datos:copia});
   if(r&&r.error){toast(r.error,false);return;}
   toast('Examen duplicado ✓');
   profeTab('examenes',document.querySelector('#profe-tabs .tab'));
@@ -1018,7 +1018,7 @@ async function profeImportarJSON(){
     const txt=document.getElementById('import-json-txt').value.trim();
     const datos=JSON.parse(txt);
     delete datos.id;datos.activo=false;
-    const r=await rpcProfe('profesor_upsert_examen',{p_id:null,p_datos:datos});
+    const r=await rpcProfe('profesor_upsert_examen',{p_id:'',p_datos:datos});
     if(r&&r.error){toast(r.error,false);return;}
     toast('Examen importado ✓');
     profeTab('examenes',document.querySelector('#profe-tabs .tab'));
@@ -1169,8 +1169,8 @@ async function guardarExamen(isAdmin){
   };
   try{
     let r;
-    if(isAdmin) r=await rpcAdmin('admin_upsert_examen',{p_id:S.editingExamenId||null,p_datos:datos});
-    else r=await rpcProfe('profesor_upsert_examen',{p_id:S.editingExamenId||null,p_datos:datos});
+    if(isAdmin) r=await rpcAdmin('admin_upsert_examen',{p_id:S.editingExamenId||'',p_datos:datos});
+    else r=await rpcProfe('profesor_upsert_examen',{p_id:S.editingExamenId||'',p_datos:datos});
     if(r&&r.error){toast(r.error,false);return;}
     toast('Examen guardado ✓');
     S.editingExamenId=null;
@@ -1423,7 +1423,7 @@ async function guardarProfe(id){
       activo:document.getElementById('mp-activo').value==='true',
     };
     if(pin.length>=6) datos.pin_hash=await sha256hex(pin);
-    const r=await rpcAdmin('admin_upsert_profesor',{p_id:id||null,p_datos:datos});
+    const r=await rpcAdmin('admin_upsert_profesor',{p_id:id||'',p_datos:datos});
     if(r&&r.error){toast(r.error,false);return;}
     cerrarModal();toast('Docente guardado ✓');
     adminTab('profesores',document.querySelector('#admin-tabs .tab:nth-child(2)'));
@@ -1452,7 +1452,7 @@ async function adminImportarJSON(){
   try{
     const txt=document.getElementById('admin-import-json').value.trim();
     const datos=JSON.parse(txt);delete datos.id;datos.activo=false;
-    const r=await rpcAdmin('admin_upsert_examen',{p_id:null,p_datos:datos});
+    const r=await rpcAdmin('admin_upsert_examen',{p_id:'',p_datos:datos});
     if(r&&r.error){toast(r.error,false);return;}
     toast('Importado ✓');adminTab('examenes',document.querySelector('#admin-tabs .tab'));
   }catch(e){toast('JSON inválido',false);}
