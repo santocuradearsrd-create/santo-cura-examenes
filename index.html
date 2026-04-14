@@ -6,6 +6,7 @@
 <title>Exámenes · Santo Cura de Ars</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f0f4f8;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;
@@ -544,11 +545,20 @@ async function rpcProfe(name,params={}){
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function xlsxExport(rows,filename){
-  const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download=filename+'.csv';
-  a.click();
+  if(typeof XLSX !== 'undefined'){
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    // Auto column widths
+    ws['!cols']=rows[0].map((_,ci)=>({wch:Math.min(40,Math.max(10,...rows.map(r=>String(r[ci]||'').length)))}));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Respuestas');
+    XLSX.writeFile(wb,filename+'.xlsx');
+  } else {
+    const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+    a.download=filename+'.csv';
+    a.click();
+  }
 }
 function pdfExportRespuestas(rows,titulo){
   const win=window.open('','_blank');
@@ -1524,125 +1534,273 @@ async function guardarExamen(isAdmin){
 // ═══════════════════════════════════════════════════════════
 // RESPUESTAS (shared profe + admin)
 // ═══════════════════════════════════════════════════════════
+// ─── Estado de revisión ───
+const REV={examenId:null,isAdmin:false,contId:null,data:[],pregs:[],idx:0};
+
 async function cargarRespuestas(contId, examenId, isAdmin){
   const cont=document.getElementById(contId);
   cont.innerHTML='<div class="loading"><div class="spin"></div></div>';
   try{
     let data;
-    if(isAdmin){
-      const r=await rpcAdmin('admin_get_respuestas',{p_examen_id:examenId});
-      data=Array.isArray(r)?r:(r||[]);
-    } else {
-      const r=await rpcProfe('profesor_get_respuestas',{p_examen_id:examenId});
-      data=Array.isArray(r)?r:(r||[]);
-    }
+    if(isAdmin){const r=await rpcAdmin('admin_get_respuestas',{p_examen_id:examenId});data=Array.isArray(r)?r:(r||[]);}
+    else{const r=await rpcProfe('profesor_get_respuestas',{p_examen_id:examenId});data=Array.isArray(r)?r:(r||[]);}
     if(!data||data.length===0){cont.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)">No hay respuestas todavía.</div>';return;}
     const {data:ex}=await sb.from('examenes').select('titulo,preguntas').eq('id',examenId).single();
-    const pregs=ex?.preguntas||[];
-    const tieneTexto=pregs.some(p=>p.tipo==='texto');
-    cont.innerHTML=`
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin},'csv')">📊 Excel/CSV</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin},'pdf')">📄 PDF</button>
-        ${tieneTexto?`<button class="btn btn-secondary btn-sm" onclick="mostrarRevision('${contId}','${examenId}',${isAdmin})">✏️ Revisar desarrollo</button>`:''}
+    const pregsRaw=normalizarPreguntas(ex?.preguntas);
+    const necesitaRevision=pregsRaw.some(p=>['texto','completar','ordenar'].includes(p.tipo));
+    const pendientes=data.filter(r=>!r.texto_revisado).length;
+
+    // Guardar estado global para revisión
+    REV.examenId=examenId;REV.isAdmin=isAdmin;REV.contId=contId;REV.data=data;REV.pregs=pregsRaw;REV.idx=0;
+
+    let statsHtml='';
+    if(data.length>0){
+      const notas=data.filter(r=>r.puntos_maximo>0).map(r=>Math.round(r.puntos_total/r.puntos_maximo*100));
+      const prom=notas.length?Math.round(notas.reduce((a,b)=>a+b,0)/notas.length):0;
+      const aprobados=notas.filter(n=>n>=60).length;
+      statsHtml=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-card-val">${data.length}</div><div class="stat-card-lbl">Entregas</div></div>
+        <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-card-val">${prom}%</div><div class="stat-card-lbl">Promedio</div></div>
+        <div class="stat-card" style="flex:1;min-width:100px"><div class="stat-card-val">${aprobados}</div><div class="stat-card-lbl">Aprobados</div></div>
+        <div class="stat-card" style="flex:1;min-width:100px;${pendientes>0?'background:#fff7ed;':''}"><div class="stat-card-val" style="${pendientes>0?'color:#ea580c':''}">${pendientes}</div><div class="stat-card-lbl">Por revisar</div></div>
+      </div>`;
+    }
+
+    cont.innerHTML=statsHtml+`
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin},'xlsx')">📥 Descargar Excel</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin},'pdf')">📄 Ver PDF</button>
+        ${necesitaRevision&&pendientes>0?`<button class="btn btn-primary btn-sm" onclick="abrirRevision(0)">✏️ Revisar (${pendientes} pendientes)</button>`:''}
+        ${necesitaRevision&&pendientes===0?'<span class="badge badge-green">✓ Todas revisadas</span>':''}
       </div>
       <div style="overflow-x:auto">
       <table class="resp-table">
         <thead><tr>
-          <th>Nombre</th><th>Grado</th><th>Sección</th><th>Pts Auto</th><th>Pts Total</th><th>Máx</th><th>%</th><th>Fecha</th>
+          <th>#</th><th>Nombre</th><th>Grado</th><th>Sec.</th><th>Auto</th><th>Total</th><th>Máx</th><th>%</th><th>Estado</th><th>Fecha</th><th></th>
         </tr></thead>
-        <tbody>${data.map(r=>`<tr>
-          <td>${esc(r.nombre)}</td>
-          <td>${esc(r.grado)}</td>
-          <td>${esc(r.seccion||'')}</td>
-          <td>${r.puntos_auto||0}</td>
-          <td>${r.puntos_total||0}</td>
-          <td>${r.puntos_maximo||0}</td>
-          <td>${r.puntos_maximo?Math.round((r.puntos_total/r.puntos_maximo)*100):0}%</td>
-          <td>${r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</td>
-        </tr>`).join('')}</tbody>
+        <tbody>${data.map((r,ri)=>{
+          const pct=r.puntos_maximo?Math.round(r.puntos_total/r.puntos_maximo*100):0;
+          const color=pct>=60?'badge-green':pct>=40?'badge-blue':'badge-red';
+          return `<tr>
+            <td style="color:var(--muted);font-size:.8rem">${ri+1}</td>
+            <td style="font-weight:600">${esc(r.nombre)}</td>
+            <td>${esc(r.grado)}</td>
+            <td>${esc(r.seccion||'')}</td>
+            <td>${r.puntos_auto||0}</td>
+            <td style="font-weight:700">${r.puntos_total||0}</td>
+            <td>${r.puntos_maximo||0}</td>
+            <td><span class="badge ${color}">${pct}%</span></td>
+            <td>${r.texto_revisado?'<span class="badge badge-green">✓ Revisado</span>':'<span class="badge badge-gray">Pendiente</span>'}</td>
+            <td style="font-size:.78rem;color:var(--muted)">${r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="abrirRevision(${ri})">👁 Ver</button></td>
+          </tr>`;
+        }).join('')}</tbody>
       </table>
       </div>`;
   }catch(e){cont.innerHTML='<div style="color:var(--danger)">Error al cargar respuestas</div>';console.error(e);}
 }
 
-async function exportarRespuestas(examenId,isAdmin,fmt='csv'){
-  let data;
-  try{
-    if(isAdmin) data=await rpcAdmin('admin_get_respuestas',{p_examen_id:examenId});
-    else data=await rpcProfe('profesor_get_respuestas',{p_examen_id:examenId});
-    data=Array.isArray(data)?data:(data||[]);
-    const {data:ex}=await sb.from('examenes').select('titulo').eq('id',examenId).single();
-    const titulo=ex?.titulo||'Respuestas';
-    const rows=[['Nombre','Grado','Sección','N° Lista','Pts Auto','Pts Total','Pts Máx','%','Revisado','Fecha']];
-    data.forEach(r=>{
-      rows.push([r.nombre,r.grado,r.seccion||'',r.numero_orden||'',r.puntos_auto||0,r.puntos_total||0,r.puntos_maximo||0,
-        r.puntos_maximo?Math.round((r.puntos_total/r.puntos_maximo)*100):0,
-        r.texto_revisado?'Sí':'No',
-        r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR'):''
-      ]);
-    });
-    if(fmt==='pdf'){pdfExportRespuestas(rows,titulo);}
-    else{xlsxExport(rows,'respuestas_'+titulo.slice(0,20));toast('Descargando CSV…');}
-  }catch(e){toast('Error al exportar',false);}
+function abrirRevision(idx){
+  REV.idx=idx;
+  renderModalRevision();
 }
 
-async function mostrarRevision(contId,examenId,isAdmin){
-  // Simple revision modal
-  let data;
-  try{
-    if(isAdmin) data=await rpcAdmin('admin_get_respuestas',{p_examen_id:examenId});
-    else data=await rpcProfe('profesor_get_respuestas',{p_examen_id:examenId});
-    data=Array.isArray(data)?data:(data||[]);
-    const sinRevisar=data.filter(r=>!r.texto_revisado);
-    if(sinRevisar.length===0){toast('Todas las respuestas ya fueron revisadas ✓');return;}
-    const r=sinRevisar[0];
-    const {data:ex}=await sb.from('examenes').select('preguntas').eq('id',examenId).single();
-    const pregs=(ex?.preguntas||[]).filter(p=>p.tipo==='texto');
-    let html=`<h2>Revisar desarrollo · ${esc(r.nombre)}</h2>
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">${sinRevisar.length} sin revisar</p>`;
-    pregs.forEach((p,i)=>{
-      const ri=ex.preguntas.indexOf(p);
-      const resp=r.respuestas?.[ri]?.respuesta||'(sin respuesta)';
-      html+=`<div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:12px">
-        <p style="font-weight:700;font-size:.9rem;margin-bottom:6px">${esc(p.enunciado)} <span style="color:var(--muted)">(${p.puntos||1} pts)</span></p>
-        <p style="background:#fff;border-radius:8px;padding:10px;border:1px solid var(--border);font-size:.88rem">${esc(resp)}</p>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <label style="font-size:.82rem;text-transform:none;letter-spacing:0">Puntos asignados:</label>
-          <input type="number" id="rev-pts-${i}" min="0" max="${p.puntos||1}" value="0" style="width:60px">
-          <span style="font-size:.82rem;color:var(--muted)">/ ${p.puntos||1}</span>
-        </div>
+function renderModalRevision(){
+  const r=REV.data[REV.idx];
+  if(!r)return;
+  const pregs=REV.pregs;
+  const total=REV.data.length;
+  const pendientes=REV.data.filter(x=>!x.texto_revisado).length;
+
+  let html=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:8px">
+      <div>
+        <h2 style="font-size:1.05rem;font-weight:700">${esc(r.nombre)}</h2>
+        <p style="color:var(--muted);font-size:.82rem">${esc(r.grado)} ${esc(r.seccion||'')} · ${r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</p>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:.75rem;color:var(--muted)">Alumno ${REV.idx+1} de ${total}</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--primary)">${r.puntos_total||0} / ${r.puntos_maximo||0} pts</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap">
+      ${REV.data.map((x,i)=>`<button onclick="REV.idx=${i};renderModalRevision()" style="width:26px;height:26px;border-radius:6px;border:1.5px solid ${i===REV.idx?'var(--primary)':x.texto_revisado?'var(--success)':'var(--border)'};background:${i===REV.idx?'var(--primary)':x.texto_revisado?'#dcfce7':'#fff'};color:${i===REV.idx?'#fff':x.texto_revisado?'#166634':'var(--muted)'};font-size:.72rem;font-weight:700;cursor:pointer">${i+1}</button>`).join('')}
+    </div>
+    <div style="max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px">`;
+
+  pregs.forEach((p,pi)=>{
+    const resp=r.respuestas?.[pi];
+    const tipoNecesitaRevision=['texto','completar','ordenar'].includes(p.tipo);
+    const detalle=r.detalle_notas||{};
+    const ptsGuardados=detalle[pi]!==undefined?detalle[pi]:'';
+
+    let respHtml='';
+    if(p.tipo==='opcion_multiple'){
+      const opts=p.opciones||[];
+      const respIdx=resp?.respuesta!==null&&resp?.respuesta!==undefined?parseInt(resp.respuesta):-1;
+      const esCorrecta=respIdx===p.correcta;
+      respHtml=opts.map((o,oi)=>{
+        const marcada=oi===respIdx;
+        const esLaCorrecta=oi===p.correcta;
+        const bg=marcada?(esCorrecta?'#dcfce7':'#fee2e2'):(esLaCorrecta?'#f0fdf4':'#fff');
+        const border=marcada?(esCorrecta?'var(--success)':'var(--danger)'):(esLaCorrecta?'var(--success)':'var(--border)');
+        return `<div style="background:${bg};border:1.5px solid ${border};border-radius:8px;padding:7px 10px;font-size:.85rem;display:flex;gap:6px">
+          <span>${marcada?'●':'○'}</span><span>${esc(o.texto||o)}</span>${esLaCorrecta?'<span style="margin-left:auto;color:var(--success);font-weight:700">✓</span>':''}
+        </div>`;
+      }).join('');
+    } else if(p.tipo==='verdadero_falso'){
+      const rv=resp?.respuesta;
+      const esCorrecta=rv===p.correcto;
+      respHtml=`<div style="display:flex;gap:8px">
+        <div style="padding:7px 14px;border-radius:8px;font-size:.88rem;font-weight:600;border:1.5px solid ${rv==='V'?(esCorrecta&&rv==='V'?'var(--success)':'var(--danger)'):'var(--border)'};background:${rv==='V'?(esCorrecta?'#dcfce7':'#fee2e2'):'#fff'}">Verdadero ${rv==='V'?'●':''}</div>
+        <div style="padding:7px 14px;border-radius:8px;font-size:.88rem;font-weight:600;border:1.5px solid ${rv==='F'?(esCorrecta&&rv==='F'?'var(--success)':'var(--danger)'):'var(--border)'};background:${rv==='F'?(esCorrecta?'#dcfce7':'#fee2e2'):'#fff'}">Falso ${rv==='F'?'●':''}</div>
+        <div style="margin-left:4px;font-size:.82rem;color:${esCorrecta?'var(--success)':'var(--danger)'};font-weight:700;align-self:center">${rv?(esCorrecta?'✓ Correcta':'✗ Incorrecta'):'Sin respuesta'}</div>
       </div>`;
-    });
-    html+=`<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarRevision('${r.id}','${examenId}',${isAdmin},'${contId}')">Guardar corrección</button>
+    } else if(p.tipo==='escala'){
+      const rv=resp?.respuesta;
+      const etiq=p.etiquetas||['1','2','3','4','5'];
+      respHtml=`<div style="display:flex;gap:8px;align-items:center">
+        ${etiq.map((e,ei)=>`<div style="text-align:center"><div style="width:36px;height:36px;border-radius:50%;border:2px solid ${String(rv)===String(ei)?'var(--primary)':'var(--border)'};background:${String(rv)===String(ei)?'#dbeafe':'#fff'};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:${String(rv)===String(ei)?'var(--primary)':'var(--muted)'}">${ei+1}</div><div style="font-size:.65rem;color:var(--muted);max-width:40px;text-align:center;margin-top:2px">${esc(e)}</div></div>`).join('')}
+      </div>`;
+    } else {
+      // texto, completar, ordenar — mostrar respuesta y campo para puntos
+      let rval=resp?.respuesta;
+      if(p.tipo==='completar'&&Array.isArray(rval)){
+        const partes=(p.enunciado||'').split('___');
+        rval=partes.map((parte,j)=>parte+(j<rval.length?'['+rval[j]+']':'')).join('');
+      } else if(p.tipo==='ordenar'&&Array.isArray(rval)&&p.items){
+        rval=rval.map((origIdx,pos)=>`${pos+1}. ${p.items[origIdx]||'?'}`).join(' → ');
+      }
+      respHtml=`<div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:.88rem;min-height:50px;white-space:pre-wrap">${esc(rval||'(sin respuesta)')}</div>`;
+    }
+
+    html+=`<div style="background:#f8fafc;border-radius:10px;padding:12px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">P${pi+1} · ${p.tipo==='opcion_multiple'?'Opción múltiple':p.tipo==='verdadero_falso'?'V/F':p.tipo==='texto'?'Desarrollo':p.tipo==='completar'?'Completar':p.tipo==='ordenar'?'Ordenar':'Escala'}</div>
+        <span class="badge badge-blue">${p.puntos||1} pts</span>
+      </div>
+      <p style="font-size:.88rem;font-weight:500;margin-bottom:8px">${esc(p.enunciado||p.texto||'')}</p>
+      ${respHtml}
+      ${tipoNecesitaRevision?`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+        <span style="font-size:.82rem;color:var(--muted)">Puntos:</span>
+        <input type="number" id="rev-pts-${pi}" min="0" max="${p.puntos||1}" value="${ptsGuardados}" style="width:65px;font-size:.95rem;font-weight:700;text-align:center">
+        <span style="font-size:.82rem;color:var(--muted)">/ ${p.puntos||1}</span>
+        ${p.tipo==='texto'&&p.rubrica?`<details style="flex:1"><summary style="font-size:.75rem;color:var(--primary);cursor:pointer">Ver rúbrica</summary><p style="font-size:.78rem;color:var(--muted);margin-top:4px;background:#fff;padding:8px;border-radius:6px">${esc(p.rubrica)}</p></details>`:''}
+      </div>`:''}
     </div>`;
-    abrirModal(html);
-  }catch(e){toast('Error',false);}
+  });
+
+  html+=`</div>
+    <div style="display:flex;gap:8px;justify-content:space-between;margin-top:14px;align-items:center">
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" ${REV.idx===0?'disabled':''} onclick="REV.idx--;renderModalRevision()">← Anterior</button>
+        <button class="btn btn-secondary btn-sm" ${REV.idx>=REV.data.length-1?'disabled':''} onclick="REV.idx++;renderModalRevision()">Siguiente →</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+        <button class="btn btn-primary" onclick="guardarRevision()">💾 Guardar corrección</button>
+      </div>
+    </div>`;
+
+  abrirModal(html);
 }
 
-async function guardarRevision(respId,examenId,isAdmin,contId){
-  const {data:ex}=await sb.from('examenes').select('preguntas').eq('id',examenId).single();
-  const pregs=(ex?.preguntas||[]);
-  const textPregs=pregs.filter(p=>p.tipo==='texto');
+async function guardarRevision(){
+  const r=REV.data[REV.idx];
+  if(!r)return;
+  const pregs=REV.pregs;
   let ptsTexto=0;
   const detalle={};
-  textPregs.forEach((p,i)=>{
-    const pts=parseInt(document.getElementById(`rev-pts-${i}`)?.value)||0;
-    const pi=pregs.indexOf(p);
-    detalle[pi]=pts;
-    ptsTexto+=pts;
+  pregs.forEach((p,pi)=>{
+    if(['texto','completar','ordenar'].includes(p.tipo)){
+      const el=document.getElementById(`rev-pts-${pi}`);
+      const pts=parseInt(el?.value)||0;
+      detalle[pi]=pts;
+      ptsTexto+=pts;
+    }
   });
-  // get original resp
-  const {data:rData}=await sb.from('respuestas_examenes').select('puntos_auto,puntos_maximo').eq('id',respId).single();
-  const ptsTotal=(rData?.puntos_auto||0)+ptsTexto;
+  const ptsTotal=(r.puntos_auto||0)+ptsTexto;
   try{
-    if(isAdmin) await rpcAdmin('admin_guardar_nota',{p_resp_id:respId,p_pts_texto:ptsTexto,p_pts_total:ptsTotal,p_detalle:detalle});
-    else await rpcProfe('profesor_guardar_nota',{p_resp_id:respId,p_pts_texto:ptsTexto,p_pts_total:ptsTotal,p_detalle:detalle});
-    cerrarModal();toast('Corrección guardada ✓');
-    await cargarRespuestas(contId,examenId,isAdmin);
+    if(REV.isAdmin) await rpcAdmin('admin_guardar_nota',{p_resp_id:r.id,p_pts_texto:ptsTexto,p_pts_total:ptsTotal,p_detalle:detalle});
+    else await rpcProfe('profesor_guardar_nota',{p_resp_id:r.id,p_pts_texto:ptsTexto,p_pts_total:ptsTotal,p_detalle:detalle});
+    // Actualizar local
+    REV.data[REV.idx].puntos_texto=ptsTexto;
+    REV.data[REV.idx].puntos_total=ptsTotal;
+    REV.data[REV.idx].texto_revisado=true;
+    REV.data[REV.idx].detalle_notas=detalle;
+    toast('Corrección guardada ✓');
+    // Si hay siguiente pendiente, avanzar
+    const siguiente=REV.data.findIndex((x,i)=>i>REV.idx&&!x.texto_revisado);
+    if(siguiente>=0){REV.idx=siguiente;renderModalRevision();}
+    else{cerrarModal();await cargarRespuestas(REV.contId,REV.examenId,REV.isAdmin);}
   }catch(e){toast('Error al guardar',false);}
+}
+
+async function exportarRespuestas(examenId,isAdmin,fmt='xlsx'){
+  let data;
+  try{
+    if(isAdmin) data=await rpcAdmin('admin_get_respuestas',{p_examen_id:examenId});
+    else data=await rpcProfe('profesor_get_respuestas',{p_examen_id:examenId});
+    data=Array.isArray(data)?data:(data||[]);
+    const {data:ex}=await sb.from('examenes').select('titulo,preguntas').eq('id',examenId).single();
+    const titulo=ex?.titulo||'Respuestas';
+    const pregs=normalizarPreguntas(ex?.preguntas);
+
+    if(fmt==='pdf'){
+      const rows=[['N°','Nombre','Grado','Sección','Lista','Pts Auto','Pts Total','Pts Máx','%','Estado','Fecha']];
+      data.forEach((r,i)=>rows.push([i+1,r.nombre,r.grado,r.seccion||'',r.numero_orden||'',r.puntos_auto||0,r.puntos_total||0,r.puntos_maximo||0,
+        r.puntos_maximo?Math.round(r.puntos_total/r.puntos_maximo*100):0,r.texto_revisado?'Revisado':'Pendiente',
+        r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR'):'']));
+      pdfExportRespuestas(rows,titulo);
+      return;
+    }
+
+    // Excel con SheetJS — hoja resumen + hoja detalle
+    if(typeof XLSX!=='undefined'){
+      const wb=XLSX.utils.book_new();
+      // Hoja 1: Resumen
+      const resumen=[['N°','Nombre','Grado','Sección','N° Lista','Pts Auto','Pts Texto','Pts Total','Pts Máx','%','Estado','Fecha']];
+      data.forEach((r,i)=>resumen.push([i+1,r.nombre,r.grado,r.seccion||'',r.numero_orden||'',
+        r.puntos_auto||0,r.puntos_texto||0,r.puntos_total||0,r.puntos_maximo||0,
+        r.puntos_maximo?Math.round(r.puntos_total/r.puntos_maximo*100):0,
+        r.texto_revisado?'Revisado':'Pendiente',
+        r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR'):'']));
+      const ws1=XLSX.utils.aoa_to_sheet(resumen);
+      ws1['!cols']=resumen[0].map((_,ci)=>({wch:Math.min(35,Math.max(8,...resumen.map(r=>String(r[ci]||'').length)))}));
+      XLSX.utils.book_append_sheet(wb,ws1,'Resumen');
+      // Hoja 2: Detalle de respuestas (solo preguntas de desarrollo)
+      const textoPregs=pregs.filter(p=>['texto','completar','ordenar'].includes(p.tipo));
+      if(textoPregs.length>0){
+        const detHeader=['Nombre','Grado','Sec.',...textoPregs.map((_,i)=>`P${i+1} - Enunciado`),...textoPregs.map((_,i)=>`P${i+1} - Respuesta`),...textoPregs.map((_,i)=>`P${i+1} - Pts`)];
+        const detRows=[detHeader];
+        data.forEach(r=>{
+          const row=[r.nombre,r.grado,r.seccion||''];
+          textoPregs.forEach(p=>row.push(p.enunciado||p.texto||''));
+          textoPregs.forEach((p,ti)=>{
+            const pi=pregs.indexOf(p);
+            const rv=r.respuestas?.[pi]?.respuesta;
+            row.push(Array.isArray(rv)?rv.join(' | '):(rv||''));
+          });
+          textoPregs.forEach((p,ti)=>{
+            const pi=pregs.indexOf(p);
+            row.push(r.detalle_notas?.[pi]!==undefined?r.detalle_notas[pi]:'');
+          });
+          detRows.push(row);
+        });
+        const ws2=XLSX.utils.aoa_to_sheet(detRows);
+        ws2['!cols']=detRows[0].map((_,ci)=>({wch:Math.min(40,Math.max(8,...detRows.map(r=>String(r[ci]||'').length)))}));
+        XLSX.utils.book_append_sheet(wb,ws2,'Desarrollo');
+      }
+      XLSX.writeFile(wb,titulo.slice(0,30)+'.xlsx');
+      toast('Descargando Excel…');
+    } else {
+      // Fallback CSV
+      const rows=[['Nombre','Grado','Sección','Pts Total','Pts Máx','%','Estado']];
+      data.forEach(r=>rows.push([r.nombre,r.grado,r.seccion||'',r.puntos_total||0,r.puntos_maximo||0,
+        r.puntos_maximo?Math.round(r.puntos_total/r.puntos_maximo*100):0,r.texto_revisado?'Revisado':'Pendiente']));
+      xlsxExport(rows,titulo);
+    }
+  }catch(e){toast('Error al exportar',false);console.error(e);}
 }
 
 // ═══════════════════════════════════════════════════════════
