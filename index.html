@@ -1146,57 +1146,64 @@ function generarPrompt(){
   const estilo=document.getElementById('pg-estilo')?.value||'';
   const rubrica=document.getElementById('pg-rubrica')?.value||'';
   const tipos=[...document.querySelectorAll('#pg-tipos input:checked')].map(i=>i.value);
-  const tiposLabel={multiple:'Opción múltiple (tipo:"multiple", opciones:["A","B","C","D"], correcta:"A"/"B"/"C"/"D")',
+  const tiposLabel={
+    multiple:'Opción múltiple (tipo:"multiple", opciones:["A","B","C","D"], correcta:"A"/"B"/"C"/"D")',
     vf:'Verdadero/Falso (tipo:"vf", correcta:"V" o "F")',
     completar:'Completar espacios (tipo:"completar", texto con ___ para cada espacio)',
     ordenar:'Ordenar pasos (tipo:"ordenar", items:[...])',
-    escala:'Escala de autopercepción (tipo:"escala", etiquetas:["Nunca",…,"Siempre"])',
-    texto:'Desarrollo/Reflexión (tipo:"texto", rubrica:"…")',
+    escala:'Escala de autopercepción (tipo:"escala", etiquetas:["Nunca","Pocas veces","A veces","Frecuentemente","Siempre"])',
+    texto:'Desarrollo/Reflexión (tipo:"texto", rubrica:"criterios de corrección")',
   };
-
-  const prompt=`Sos un diseñador experto de evaluaciones educativas.${estilo?` El enfoque pedagógico es: ${estilo}.`:''}
-
-Creá un examen completo en formato JSON para:
-- Materia: ${materia||'[materia]'}
-- Grado: ${grado}${periodo?'
-- Período / Unidad: '+periodo:''}
-- Tiempo: ${tiempo}${temas?'
-- Temas a evaluar: '+temas:''}${cantidad?'
-- Distribución de preguntas: '+cantidad:''}
-
-TIPOS DE PREGUNTAS A USAR:
-${tipos.map(t=>tiposLabel[t]||t).join('
-')}
-
-ESTRUCTURA JSON REQUERIDA (seguir exactamente):
-{
-  "titulo": "string",
-  "descripcion": "string breve",
-  "grado": "${grado}",
-  "periodo": número,
-  "tiempo_minutos": número,
-  "instrucciones": "string para el alumno",
-  "rubrica_txt": "string con criterios de corrección",${rubrica?'
-  // Incluir esto en rubrica_txt: '+rubrica:''}
-  "secciones_activas": [],
-  "validar_lista": false,
-  "preguntas": [ /* array de preguntas */ ]
-}
-
-REGLAS IMPORTANTES:
-- Campo "texto" para el enunciado de cada pregunta (no "enunciado")
-- Asignar puntos a cada pregunta (campo "puntos", suma total recomendada: 100)
-- Opciones múltiple: usar strings simples en el array, no objetos
-- Correcta de opción múltiple: letra mayúscula "A", "B", "C" o "D"
-- Preguntas de completar: usar ___ (tres guiones bajos) para cada espacio
-- NO incluir campo "id" ni "activo" ni "profesor_id"
-- Responder SOLO con el JSON, sin texto antes ni después, sin bloques de código markdown
-
-${temas?`Los temas deben estar distribuidos de forma equilibrada. Priorizar preguntas que integren conceptos, no solo memorización.`:''}
-${estilo&&estilo.toLowerCase().includes('bíbli')||estilo&&estilo.toLowerCase().includes('bibli')||estilo&&estilo.toLowerCase().includes('cristian')?'Incluir citas bíblicas relevantes en los enunciados donde sea natural.':''}`;
-
+  const nl='
+';
+  let lines=[];
+  lines.push('Sos un diseñador experto de evaluaciones educativas.' + (estilo?' El enfoque pedagógico es: '+estilo+'.':''));
+  lines.push('');
+  lines.push('Creá un examen completo en formato JSON para:');
+  lines.push('- Materia: '+(materia||'[materia]'));
+  lines.push('- Grado: '+grado);
+  if(periodo) lines.push('- Período / Unidad: '+periodo);
+  lines.push('- Tiempo: '+tiempo);
+  if(temas) lines.push('- Temas a evaluar: '+temas);
+  if(cantidad) lines.push('- Distribución de preguntas: '+cantidad);
+  lines.push('');
+  lines.push('TIPOS DE PREGUNTAS A USAR:');
+  tipos.forEach(t=>lines.push('- '+(tiposLabel[t]||t)));
+  lines.push('');
+  lines.push('ESTRUCTURA JSON REQUERIDA (seguir exactamente):');
+  lines.push('{');
+  lines.push('  "titulo": "string",');
+  lines.push('  "descripcion": "string breve",');
+  lines.push('  "grado": "'+grado+'",');
+  lines.push('  "periodo": número,');
+  lines.push('  "tiempo_minutos": número,');
+  lines.push('  "instrucciones": "string para el alumno",');
+  lines.push('  "rubrica_txt": "string con criterios de corrección",'+(rubrica?' // incluir: '+rubrica:''));
+  lines.push('  "secciones_activas": [],');
+  lines.push('  "validar_lista": false,');
+  lines.push('  "preguntas": [ /* array de preguntas */ ]');
+  lines.push('}');
+  lines.push('');
+  lines.push('REGLAS IMPORTANTES:');
+  lines.push('- Campo "texto" para el enunciado de cada pregunta (NO usar "enunciado")');
+  lines.push('- Asignar puntos a cada pregunta (campo "puntos", suma total = 100)');
+  lines.push('- Opciones múltiple: array de strings simples, no objetos');
+  lines.push('- Correcta de opción múltiple: letra mayúscula "A", "B", "C" o "D"');
+  lines.push('- Preguntas de completar: usar ___ (tres guiones bajos) para cada espacio en blanco');
+  lines.push('- Preguntas de escala: campo "etiquetas" con array de 5 strings');
+  lines.push('- Preguntas de ordenar: campo "items" con array de strings a ordenar');
+  lines.push('- NO incluir campos "id", "activo" ni "profesor_id"');
+  lines.push('- Responder SOLO con el JSON puro, sin texto antes ni después, sin bloques de código markdown');
+  if(temas){
+    lines.push('');
+    lines.push('Los temas deben estar distribuidos equilibradamente. Priorizar preguntas que integren conceptos, no solo memorización.');
+  }
+  const estiloLow=(estilo||'').toLowerCase();
+  if(estiloLow.includes('bib')||estiloLow.includes('crist')||estiloLow.includes('fe')){
+    lines.push('Incluir citas bíblicas relevantes en los enunciados donde sea pertinente.');
+  }
   const out=document.getElementById('pg-output');
-  if(out)out.textContent=prompt;
+  if(out)out.textContent=lines.join(nl);
 }
 
 function copiarPrompt(){
