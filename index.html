@@ -542,12 +542,31 @@ async function rpcProfe(name,params={}){
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function xlsxExport(rows,filename){
-  // Simple CSV export as fallback
   const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
   a.download=filename+'.csv';
   a.click();
+}
+function pdfExportRespuestas(rows,titulo){
+  const win=window.open('','_blank');
+  const trs=rows.slice(1).map(r=>`<tr>${r.map(c=>`<td>${String(c||'').replace(/</g,'&lt;')}</td>`).join('')}</tr>`).join('');
+  const ths=rows[0].map(c=>`<th>${c}</th>`).join('');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <title>${titulo}</title>
+    <style>body{font-family:Arial,sans-serif;font-size:11px;padding:20px}
+    h2{margin-bottom:12px}
+    table{border-collapse:collapse;width:100%}
+    th{background:#1d4ed8;color:#fff;padding:6px 8px;text-align:left}
+    td{padding:5px 8px;border-bottom:1px solid #e2e8f0}
+    tr:nth-child(even){background:#f8fafc}
+    @media print{button{display:none}}
+    </style></head><body>
+    <h2>${titulo}</h2>
+    <button onclick="window.print()" style="margin-bottom:12px;padding:8px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨 Imprimir / Guardar PDF</button>
+    <table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>
+    </body></html>`);
+  win.document.close();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -707,7 +726,7 @@ async function cargarExamenes(){
             <span class="badge badge-gray">⏱ ${e.tiempo_minutos||30} min</span>
           </div>
         </div>
-        <button class="btn btn-primary btn-sm">Rendir →</button>
+        <button class="btn btn-primary btn-sm">Realizar →</button>
       </div>`).join('');
   }catch(e){
     cont.innerHTML='<div style="text-align:center;padding:32px;color:var(--danger)">Error al cargar exámenes.</div>';
@@ -747,15 +766,42 @@ function iniciarExamen(){
   S.regData={nombre,grado,seccion,numero_orden:orden?parseInt(orden):null};
   S.respuestasTemp={};
   S.pregActual=0;
+  S._pregsCached=null;
   renderPreguntas();
   iniciarTimer();
   show('examen');
 }
 
+function normalizarPreguntas(raw){
+  if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch(e){return[];}}
+  if(!Array.isArray(raw))return[];
+  const LETRA={A:0,B:1,C:2,D:3,E:4};
+  return raw.map(p=>{
+    const q={...p};
+    // Normalizar campo enunciado
+    if(!q.enunciado&&q.texto)q.enunciado=q.texto;
+    // Normalizar tipo
+    if(q.tipo==='multiple')q.tipo='opcion_multiple';
+    else if(q.tipo==='vf')q.tipo='verdadero_falso';
+    else if(q.tipo==='completar')q.tipo='completar';
+    else if(q.tipo==='ordenar')q.tipo='ordenar';
+    else if(q.tipo==='escala')q.tipo='escala';
+    // Normalizar opciones a objetos
+    if(q.tipo==='opcion_multiple'&&Array.isArray(q.opciones)){
+      q.opciones=q.opciones.map(o=>typeof o==='string'?{texto:o}:o);
+      // Convertir correcta letra a índice
+      if(typeof q.correcta==='string'&&q.correcta.length===1&&LETRA[q.correcta.toUpperCase()]!==undefined){
+        q.correcta=LETRA[q.correcta.toUpperCase()];
+      }
+    }
+    return q;
+  });
+}
 function getPregs(){
-  let p=S.examenActual.preguntas;
-  if(typeof p==='string'){try{p=JSON.parse(p);}catch(e){p=[];}}
-  return Array.isArray(p)?p:[];
+  if(!S._pregsCached){
+    S._pregsCached=normalizarPreguntas(S.examenActual.preguntas);
+  }
+  return S._pregsCached;
 }
 
 function renderPreguntas(){
@@ -765,21 +811,67 @@ function renderPreguntas(){
 }
 
 function preguntaHTML(p,i){
+  const saved=S.respuestasTemp&&S.respuestasTemp[i]!==undefined?S.respuestasTemp[i]:'';
   if(p.tipo==='opcion_multiple'){
     const opts=p.opciones||[];
     return `<div class="opciones">
-      ${opts.map((o,j)=>`<label class="opcion-label" id="opc-${i}-${j}">
-        <input type="radio" name="preg-${i}" value="${j}" onchange="marcarOpcion(${i},${j})">
+      ${opts.map((o,j)=>`<label class="opcion-label" id="opc-${i}-${j}" ${String(saved)===String(j)?'class="opcion-label selected"':''}>
+        <input type="radio" name="preg-${i}" value="${j}" ${String(saved)===String(j)?'checked':''} onchange="marcarOpcion(${i},${j})">
         ${esc(o.texto||o)}
       </label>`).join('')}
     </div>`;
   } else if(p.tipo==='verdadero_falso'){
     return `<div class="opciones">
-      <label class="opcion-label" id="opc-${i}-0"><input type="radio" name="preg-${i}" value="V" onchange="marcarOpcion(${i},'V')"> Verdadero</label>
-      <label class="opcion-label" id="opc-${i}-1"><input type="radio" name="preg-${i}" value="F" onchange="marcarOpcion(${i},'F')"> Falso</label>
+      <label class="opcion-label" id="opc-${i}-0" ${saved==='V'?'style="border-color:var(--primary);background:#dbeafe"':''}>
+        <input type="radio" name="preg-${i}" value="V" ${saved==='V'?'checked':''} onchange="marcarOpcion(${i},'V')"> Verdadero</label>
+      <label class="opcion-label" id="opc-${i}-1" ${saved==='F'?'style="border-color:var(--primary);background:#dbeafe"':''}>
+        <input type="radio" name="preg-${i}" value="F" ${saved==='F'?'checked':''} onchange="marcarOpcion(${i},'F')"> Falso</label>
+    </div>`;
+  } else if(p.tipo==='completar'){
+    // Rellenar espacios en blanco
+    const partes=(p.enunciado||'').split('___');
+    let html='<div style="line-height:2.2;font-size:.97rem">';
+    partes.forEach((parte,j)=>{
+      html+=esc(parte);
+      if(j<partes.length-1){
+        const val=saved&&saved[j]?saved[j]:'';
+        html+=`<input type="text" id="comp-${i}-${j}" value="${esc(val)}"
+          style="display:inline-block;width:140px;border-bottom:2px solid var(--primary);border-top:none;border-left:none;border-right:none;border-radius:0;padding:2px 6px;margin:0 4px"
+          oninput="guardarCompletar(${i})">`;
+      }
+    });
+    html+='</div>';
+    return html;
+  } else if(p.tipo==='ordenar'){
+    const items=p.items||[];
+    const orden=saved&&Array.isArray(saved)?saved:items.map((_,k)=>k);
+    return `<div id="orden-list-${i}" style="display:flex;flex-direction:column;gap:6px">
+      ${orden.map((origIdx,pos)=>`
+        <div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px">
+          <span style="font-weight:700;color:var(--primary);min-width:22px">${pos+1}.</span>
+          <span style="flex:1;font-size:.92rem">${esc(items[origIdx])}</span>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-ghost btn-sm" style="padding:4px 8px" onclick="moverOrden(${i},${pos},-1)">↑</button>
+            <button class="btn btn-ghost btn-sm" style="padding:4px 8px" onclick="moverOrden(${i},${pos},1)">↓</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  } else if(p.tipo==='escala'){
+    const etiq=p.etiquetas||['1','2','3','4','5'];
+    return `<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);padding:0 4px">
+        <span>${esc(etiq[0])}</span><span>${esc(etiq[etiq.length-1])}</span>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        ${etiq.map((e,j)=>`<label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-size:.82rem;font-weight:600;color:${String(saved)===String(j)?'var(--primary)':'var(--muted)'}">
+          <div style="width:44px;height:44px;border-radius:50%;border:2px solid ${String(saved)===String(j)?'var(--primary)':'var(--border)'};background:${String(saved)===String(j)?'#dbeafe':'#fff'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;cursor:pointer" onclick="marcarOpcion(${i},${j})">${j+1}</div>
+          <span style="text-align:center;max-width:60px;line-height:1.1">${esc(e)}</span>
+        </label>`).join('')}
+      </div>
     </div>`;
   } else {
-    return `<textarea class="resp-text" id="resp-texto-${i}" placeholder="Escribí tu respuesta aquí…" oninput="actualizarProgreso()">${S.respuestasTemp&&S.respuestasTemp[i]?esc(S.respuestasTemp[i]):''}</textarea>`;
+    // texto / desarrollo
+    return `<textarea class="resp-text" id="resp-texto-${i}" placeholder="Escribí tu respuesta aquí…" oninput="guardarTexto(${i})" style="min-height:100px">${saved?esc(saved):''}</textarea>`;
   }
 }
 
@@ -821,8 +913,10 @@ function respondioIdx(i){
   const pregs=getPregs();
   const p=pregs[i];
   if(!p)return false;
-  if(p.tipo==='texto') return !!(S.respuestasTemp&&S.respuestasTemp[i]&&S.respuestasTemp[i].trim());
-  return !!(S.respuestasTemp&&S.respuestasTemp[i]!==undefined&&S.respuestasTemp[i]!==null);
+  const v=S.respuestasTemp&&S.respuestasTemp[i];
+  if(p.tipo==='texto'||p.tipo==='completar') return !!(v&&(Array.isArray(v)?v.some(x=>x&&x.trim()):String(v).trim()));
+  if(p.tipo==='ordenar') return Array.isArray(v)&&v.length>0;
+  return v!==undefined&&v!==null&&v!=='';
 }
 
 function navegarPregunta(dir){
@@ -839,6 +933,37 @@ function navegarPregunta(dir){
   mostrarPregunta(S.pregActual+dir);
 }
 
+function guardarCompletar(i){
+  const pregs=getPregs();const p=pregs[i];if(!p)return;
+  const partes=(p.enunciado||'').split('___');
+  const vals=[];
+  for(let j=0;j<partes.length-1;j++){
+    const el=document.getElementById(`comp-${i}-${j}`);
+    vals.push(el?el.value:'');
+  }
+  if(!S.respuestasTemp)S.respuestasTemp={};
+  S.respuestasTemp[i]=vals;
+  actualizarProgreso();
+}
+function guardarTexto(i){
+  const el=document.getElementById(`resp-texto-${i}`);
+  if(!el)return;
+  if(!S.respuestasTemp)S.respuestasTemp={};
+  S.respuestasTemp[i]=el.value;
+  actualizarProgreso();
+}
+function moverOrden(pregIdx,pos,dir){
+  const pregs=getPregs();const p=pregs[pregIdx];if(!p)return;
+  const items=p.items||[];
+  let orden=S.respuestasTemp&&Array.isArray(S.respuestasTemp[pregIdx])?[...S.respuestasTemp[pregIdx]]:items.map((_,k)=>k);
+  const newPos=pos+dir;
+  if(newPos<0||newPos>=orden.length)return;
+  [orden[pos],orden[newPos]]=[orden[newPos],orden[pos]];
+  if(!S.respuestasTemp)S.respuestasTemp={};
+  S.respuestasTemp[pregIdx]=orden;
+  actualizarProgreso();
+  mostrarPregunta(pregIdx);
+}
 function marcarOpcion(pregIdx,val){
   const pregs=getPregs();
   const p=pregs[pregIdx];
@@ -906,15 +1031,22 @@ async function enviarExamen(forced=false){
     ptsMax+=(p.puntos||1);
     if(p.tipo==='texto'){
       const val=(S.respuestasTemp&&S.respuestasTemp[i])||'';
-      respuestas[i]={tipo:'texto',respuesta:val.trim()};
+      respuestas[i]={tipo:'texto',respuesta:typeof val==='string'?val.trim():val};
       ptsTexto+=(p.puntos||1);
     } else {
-      const rval=(S.respuestasTemp&&S.respuestasTemp[i]!==undefined)?String(S.respuestasTemp[i]):null;
+      const rval=S.respuestasTemp&&S.respuestasTemp[i]!==undefined?S.respuestasTemp[i]:null;
       respuestas[i]={tipo:p.tipo,respuesta:rval};
       let correcto=false;
-      if(p.tipo==='verdadero_falso'){correcto=rval===p.correcto;}
-      else{const idx=p.opciones?p.opciones.findIndex(o=>(o.correcto||o.es_correcta||false)):p.correcta;correcto=rval!==null&&parseInt(rval)===idx;}
+      if(p.tipo==='verdadero_falso'){correcto=String(rval)===String(p.correcto);}
+      else if(p.tipo==='escala'){correcto=rval!==null;} // escala siempre suma (es autopercepción)
+      else if(p.tipo==='completar'||p.tipo==='ordenar'){correcto=false;} // corrección manual
+      else{
+        const cidx=typeof p.correcta==='number'?p.correcta:(p.opciones?p.opciones.findIndex(o=>(o.correcto||o.es_correcta||false)):-1);
+        correcto=rval!==null&&parseInt(rval)===cidx;
+      }
       if(correcto)ptsAuto+=(p.puntos||1);
+      // completar/ordenar van a pts_texto (corrección manual)
+      if(p.tipo==='completar'||p.tipo==='ordenar')ptsTexto+=(p.puntos||1);
     }
   });
   const tiempoUsado=S.startSecs-S.timerSecs;
@@ -1270,7 +1402,8 @@ async function cargarRespuestas(contId, examenId, isAdmin){
     const tieneTexto=pregs.some(p=>p.tipo==='texto');
     cont.innerHTML=`
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin})">📊 Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin},'csv')">📊 Excel/CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportarRespuestas('${examenId}',${isAdmin},'pdf')">📄 PDF</button>
         ${tieneTexto?`<button class="btn btn-secondary btn-sm" onclick="mostrarRevision('${contId}','${examenId}',${isAdmin})">✏️ Revisar desarrollo</button>`:''}
       </div>
       <div style="overflow-x:auto">
@@ -1293,12 +1426,14 @@ async function cargarRespuestas(contId, examenId, isAdmin){
   }catch(e){cont.innerHTML='<div style="color:var(--danger)">Error al cargar respuestas</div>';console.error(e);}
 }
 
-async function exportarRespuestas(examenId,isAdmin){
+async function exportarRespuestas(examenId,isAdmin,fmt='csv'){
   let data;
   try{
     if(isAdmin) data=await rpcAdmin('admin_get_respuestas',{p_examen_id:examenId});
     else data=await rpcProfe('profesor_get_respuestas',{p_examen_id:examenId});
     data=Array.isArray(data)?data:(data||[]);
+    const {data:ex}=await sb.from('examenes').select('titulo').eq('id',examenId).single();
+    const titulo=ex?.titulo||'Respuestas';
     const rows=[['Nombre','Grado','Sección','N° Lista','Pts Auto','Pts Total','Pts Máx','%','Revisado','Fecha']];
     data.forEach(r=>{
       rows.push([r.nombre,r.grado,r.seccion||'',r.numero_orden||'',r.puntos_auto||0,r.puntos_total||0,r.puntos_maximo||0,
@@ -1307,8 +1442,8 @@ async function exportarRespuestas(examenId,isAdmin){
         r.submitted_at?new Date(r.submitted_at).toLocaleString('es-AR'):''
       ]);
     });
-    xlsxExport(rows,'respuestas_'+examenId.slice(0,8));
-    toast('Descargando CSV…');
+    if(fmt==='pdf'){pdfExportRespuestas(rows,titulo);}
+    else{xlsxExport(rows,'respuestas_'+titulo.slice(0,20));toast('Descargando CSV…');}
   }catch(e){toast('Error al exportar',false);}
 }
 
