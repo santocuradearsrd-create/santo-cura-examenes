@@ -345,6 +345,7 @@ textarea.resp-text{resize:vertical;min-height:80px}
       <button class="tab active" onclick="profeTab('examenes',this)">📋 Mis exámenes</button>
       <button class="tab" onclick="profeTab('crear',this)">➕ Nuevo examen</button>
       <button class="tab" onclick="profeTab('importar',this)">📥 Importar JSON</button>
+      <button class="tab" onclick="profeTab('prompt',this)">🤖 Generar con IA</button>
     </div>
     <div id="profe-tab-content"></div>
   </div>
@@ -406,6 +407,7 @@ textarea.resp-text{resize:vertical;min-height:80px}
       <button class="tab" onclick="adminTab('profesores',this)">👩‍🏫 Docentes</button>
       <button class="tab" onclick="adminTab('crear',this)">➕ Nuevo examen</button>
       <button class="tab" onclick="adminTab('importar',this)">📥 Importar JSON</button>
+      <button class="tab" onclick="adminTab('prompt',this)">🤖 Generar con IA</button>
     </div>
     <div id="admin-tab-content"></div>
   </div>
@@ -881,7 +883,8 @@ function mostrarPregunta(idx){
   S.pregActual=idx;
   const p=pregs[idx];
   const cont=document.getElementById('preguntas-container');
-  const tipo=p.tipo==='opcion_multiple'?'Opción múltiple':p.tipo==='verdadero_falso'?'Verdadero / Falso':'Desarrollo';
+  const tipo=p.tipo==='opcion_multiple'?'Opción múltiple':p.tipo==='verdadero_falso'?'Verdadero / Falso'
+    :p.tipo==='completar'?'Completar':p.tipo==='ordenar'?'Ordenar':p.tipo==='escala'?'Escala':'Desarrollo';
   cont.innerHTML=`
     <div class="pregunta-block" id="preg-${idx}" style="min-height:260px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -893,20 +896,22 @@ function mostrarPregunta(idx){
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px">
       <button class="btn btn-secondary" ${idx===0?'disabled':''} onclick="navegarPregunta(-1)">← Anterior</button>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;flex:1">${pregs.map((_,i)=>`
-        <button onclick="mostrarPregunta(${i})" style="width:30px;height:30px;border-radius:8px;border:1.5px solid ${i===idx?'var(--primary)':respondioIdx(i)?'var(--success)':'var(--border)'};background:${i===idx?'var(--primary)':respondioIdx(i)?'#dcfce7':'#fff'};color:${i===idx?'#fff':respondioIdx(i)?'#166534':'var(--muted)'};font-size:.8rem;font-weight:700;cursor:pointer">${i+1}</button>`).join('')}
-      </div>
+      <div id="nav-dots" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;flex:1"></div>
       ${idx<pregs.length-1
         ?`<button class="btn btn-primary" onclick="navegarPregunta(1)">Siguiente →</button>`
         :`<button class="btn btn-success" onclick="enviarExamen()">Entregar ✓</button>`}
     </div>`;
-  // Restaurar respuesta guardada
-  if(p.tipo!=='texto'&&S.respuestasTemp&&S.respuestasTemp[idx]!==undefined){
-    const val=S.respuestasTemp[idx];
-    const inp=document.querySelector(`input[name="preg-${idx}"][value="${val}"]`);
-    if(inp){inp.checked=true;marcarOpcion(idx,val);}
-  }
+  actualizarNavDots();
   actualizarProgreso();
+}
+
+function actualizarNavDots(){
+  const pregs=getPregs();
+  const idx=S.pregActual;
+  const dots=document.getElementById('nav-dots');
+  if(!dots)return;
+  dots.innerHTML=pregs.map((_,i)=>`
+    <button onclick="mostrarPregunta(${i})" style="width:30px;height:30px;border-radius:8px;border:1.5px solid ${i===idx?'var(--primary)':respondioIdx(i)?'var(--success)':'var(--border)'};background:${i===idx?'var(--primary)':respondioIdx(i)?'#dcfce7':'#fff'};color:${i===idx?'#fff':respondioIdx(i)?'#166634':'var(--muted)'};font-size:.8rem;font-weight:700;cursor:pointer">${i+1}</button>`).join('');
 }
 
 function respondioIdx(i){
@@ -944,6 +949,7 @@ function guardarCompletar(i){
   if(!S.respuestasTemp)S.respuestasTemp={};
   S.respuestasTemp[i]=vals;
   actualizarProgreso();
+  actualizarNavDots();
 }
 function guardarTexto(i){
   const el=document.getElementById(`resp-texto-${i}`);
@@ -951,6 +957,7 @@ function guardarTexto(i){
   if(!S.respuestasTemp)S.respuestasTemp={};
   S.respuestasTemp[i]=el.value;
   actualizarProgreso();
+  actualizarNavDots();
 }
 function moverOrden(pregIdx,pos,dir){
   const pregs=getPregs();const p=pregs[pregIdx];if(!p)return;
@@ -976,8 +983,7 @@ function marcarOpcion(pregIdx,val){
   if(!S.respuestasTemp)S.respuestasTemp={};
   S.respuestasTemp[pregIdx]=val;
   actualizarProgreso();
-  // Refrescar numeritos de navegación
-  setTimeout(()=>mostrarPregunta(S.pregActual),50);
+  actualizarNavDots();
 }
 
 function actualizarProgreso(){
@@ -1076,6 +1082,133 @@ async function enviarExamen(forced=false){
 }
 
 // ═══════════════════════════════════════════════════════════
+// GENERADOR DE PROMPT PARA IA
+// ═══════════════════════════════════════════════════════════
+function tabPromptIA(cont){
+  cont.innerHTML=`
+    <div class="card" style="max-width:720px">
+      <h3 style="font-weight:700;margin-bottom:4px">🤖 Generador de Prompt para IA</h3>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px">Completá los campos y copiá el prompt generado. Pegalo en Claude, ChatGPT o cualquier IA — te entregará el examen listo en formato JSON para importar directamente.</p>
+      <div class="grid-2">
+        <div class="form-group"><label>Materia</label><input id="pg-materia" placeholder="Ej: Religión, Matemática…" oninput="generarPrompt()"></div>
+        <div class="form-group"><label>Grado</label>
+          <select id="pg-grado" onchange="generarPrompt()">
+            ${GRADOS_CONFIG.map(g=>`<option value="${g.label}">${g.label}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Período / Unidad</label><input id="pg-periodo" placeholder="Ej: Período 3 — Ética Digital" oninput="generarPrompt()"></div>
+        <div class="form-group"><label>Tiempo del examen</label><input id="pg-tiempo" placeholder="Ej: 45 minutos" oninput="generarPrompt()"></div>
+      </div>
+      <div class="form-group"><label>Temas que debe cubrir el examen</label>
+        <textarea id="pg-temas" style="min-height:72px" placeholder="Ej: Ética digital, uso responsable de redes sociales, Laudato Si, bioetica (principios de autonomía, beneficencia, no maleficencia, justicia)" oninput="generarPrompt()"></textarea>
+      </div>
+      <div class="form-group"><label>Tipos de preguntas a incluir</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="pg-tipos">
+          ${[
+            ['multiple','Opción múltiple'],['vf','Verdadero / Falso'],
+            ['completar','Completar'],['ordenar','Ordenar'],
+            ['escala','Escala (autopercepción)'],['texto','Desarrollo / Reflexión']
+          ].map(([v,l])=>`<label style="display:flex;align-items:center;gap:5px;font-size:.88rem;font-weight:500;text-transform:none;letter-spacing:0;cursor:pointer">
+            <input type="checkbox" value="${v}" checked onchange="generarPrompt()" style="width:auto"> ${l}
+          </label>`).join('')}
+        </div>
+      </div>
+      <div class="form-group"><label>Cantidad de preguntas por tipo (aprox.)</label>
+        <input id="pg-cantidad" placeholder="Ej: 4 opción múltiple, 3 V/F, 2 desarrollo, 1 escala" oninput="generarPrompt()">
+      </div>
+      <div class="form-group"><label>Enfoque / estilo pedagógico (opcional)</label>
+        <input id="pg-estilo" placeholder="Ej: cristiano, reflexivo, conectado con la vida real, citas bíblicas" oninput="generarPrompt()">
+      </div>
+      <div class="form-group"><label>Instrucciones o rúbrica adicional (opcional)</label>
+        <textarea id="pg-rubrica" style="min-height:56px" placeholder="Ej: Preguntas de desarrollo evalúan autenticidad y cita bíblica. Rúbrica: Excelente 9-10pts, Satisfactorio 7-8pts…" oninput="generarPrompt()"></textarea>
+      </div>
+      <div style="background:#1e3a5f;border-radius:12px;padding:16px;margin-top:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="color:#93c5fd;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em">PROMPT GENERADO</span>
+          <button class="btn btn-primary btn-sm" onclick="copiarPrompt()">📋 Copiar prompt</button>
+        </div>
+        <pre id="pg-output" style="color:#e2e8f0;font-size:.78rem;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;font-family:monospace;line-height:1.5"></pre>
+      </div>
+      <p style="color:var(--muted);font-size:.8rem;margin-top:10px">💡 Después de que la IA genere el JSON, copialo y usá la pestaña <strong>Importar JSON</strong> para cargarlo.</p>
+    </div>`;
+  generarPrompt();
+}
+
+function generarPrompt(){
+  const materia=document.getElementById('pg-materia')?.value||'';
+  const grado=document.getElementById('pg-grado')?.value||'';
+  const periodo=document.getElementById('pg-periodo')?.value||'';
+  const tiempo=document.getElementById('pg-tiempo')?.value||'45 minutos';
+  const temas=document.getElementById('pg-temas')?.value||'';
+  const cantidad=document.getElementById('pg-cantidad')?.value||'';
+  const estilo=document.getElementById('pg-estilo')?.value||'';
+  const rubrica=document.getElementById('pg-rubrica')?.value||'';
+  const tipos=[...document.querySelectorAll('#pg-tipos input:checked')].map(i=>i.value);
+  const tiposLabel={multiple:'Opción múltiple (tipo:"multiple", opciones:["A","B","C","D"], correcta:"A"/"B"/"C"/"D")',
+    vf:'Verdadero/Falso (tipo:"vf", correcta:"V" o "F")',
+    completar:'Completar espacios (tipo:"completar", texto con ___ para cada espacio)',
+    ordenar:'Ordenar pasos (tipo:"ordenar", items:[...])',
+    escala:'Escala de autopercepción (tipo:"escala", etiquetas:["Nunca",…,"Siempre"])',
+    texto:'Desarrollo/Reflexión (tipo:"texto", rubrica:"…")',
+  };
+
+  const prompt=`Sos un diseñador experto de evaluaciones educativas.${estilo?` El enfoque pedagógico es: ${estilo}.`:''}
+
+Creá un examen completo en formato JSON para:
+- Materia: ${materia||'[materia]'}
+- Grado: ${grado}${periodo?'
+- Período / Unidad: '+periodo:''}
+- Tiempo: ${tiempo}${temas?'
+- Temas a evaluar: '+temas:''}${cantidad?'
+- Distribución de preguntas: '+cantidad:''}
+
+TIPOS DE PREGUNTAS A USAR:
+${tipos.map(t=>tiposLabel[t]||t).join('
+')}
+
+ESTRUCTURA JSON REQUERIDA (seguir exactamente):
+{
+  "titulo": "string",
+  "descripcion": "string breve",
+  "grado": "${grado}",
+  "periodo": número,
+  "tiempo_minutos": número,
+  "instrucciones": "string para el alumno",
+  "rubrica_txt": "string con criterios de corrección",${rubrica?'
+  // Incluir esto en rubrica_txt: '+rubrica:''}
+  "secciones_activas": [],
+  "validar_lista": false,
+  "preguntas": [ /* array de preguntas */ ]
+}
+
+REGLAS IMPORTANTES:
+- Campo "texto" para el enunciado de cada pregunta (no "enunciado")
+- Asignar puntos a cada pregunta (campo "puntos", suma total recomendada: 100)
+- Opciones múltiple: usar strings simples en el array, no objetos
+- Correcta de opción múltiple: letra mayúscula "A", "B", "C" o "D"
+- Preguntas de completar: usar ___ (tres guiones bajos) para cada espacio
+- NO incluir campo "id" ni "activo" ni "profesor_id"
+- Responder SOLO con el JSON, sin texto antes ni después, sin bloques de código markdown
+
+${temas?`Los temas deben estar distribuidos de forma equilibrada. Priorizar preguntas que integren conceptos, no solo memorización.`:''}
+${estilo&&estilo.toLowerCase().includes('bíbli')||estilo&&estilo.toLowerCase().includes('bibli')||estilo&&estilo.toLowerCase().includes('cristian')?'Incluir citas bíblicas relevantes en los enunciados donde sea natural.':''}`;
+
+  const out=document.getElementById('pg-output');
+  if(out)out.textContent=prompt;
+}
+
+function copiarPrompt(){
+  const txt=document.getElementById('pg-output')?.textContent||'';
+  navigator.clipboard.writeText(txt).then(()=>toast('¡Prompt copiado!')).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=txt;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');ta.remove();toast('¡Prompt copiado!');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 // PROFE AUTH
 // ═══════════════════════════════════════════════════════════
 function initProfeLogin(){
@@ -1106,6 +1239,7 @@ async function profeTab(tab, btn){
   if(tab==='examenes') await profeTabExamenes(cont);
   else if(tab==='crear'){S.editingExamenId=null;show('profe-crear');renderExamenForm('profe-form-wrap',false);}
   else if(tab==='importar') profeTabImportar(cont);
+  else if(tab==='prompt') tabPromptIA(cont);
 }
 
 async function profeTabExamenes(cont){
@@ -1532,6 +1666,7 @@ async function adminTab(tab,btn){
   else if(tab==='profesores') await adminTabProfesores(cont);
   else if(tab==='crear'){S.editingExamenId=null;show('admin-crear');document.getElementById('admin-crear-titulo').textContent='Nuevo examen';renderExamenForm('admin-form-wrap',true);}
   else if(tab==='importar') adminTabImportar(cont);
+  else if(tab==='prompt') tabPromptIA(cont);
 }
 
 async function adminTabExamenes(cont){
