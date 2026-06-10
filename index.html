@@ -18,7 +18,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .view{display:none}
 .view.active{display:block}
 
-/* ── Utils ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:none;border-radius:10px;
   font-family:inherit;font-size:.93rem;font-weight:600;cursor:pointer;transition:.15s}
 .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dk)}
@@ -49,13 +48,11 @@ label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-b
 .toast-err{background:#dc2626}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
-/* ── Header strip ── */
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;
   display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .topbar-title{font-weight:700;font-size:1rem;color:var(--text)}
 .topbar-sub{font-size:.8rem;color:var(--muted)}
 
-/* ── Landing ── */
 #view-landing{min-height:100vh}
 .landing-hero{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;
   padding:56px 24px 40px;text-align:center}
@@ -82,7 +79,6 @@ label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-b
   background:var(--card);border-radius:14px;border:1.5px dashed var(--border)}
 .docente-access-bar p{font-size:.88rem;color:var(--muted);margin-bottom:10px}
 
-/* ── Selector de grado ── */
 .page-wrap{max-width:680px;margin:0 auto;padding:32px 20px}
 .grade-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:20px}
 .grade-btn{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:20px;
@@ -91,7 +87,6 @@ label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-b
 .grade-btn-num{font-size:2rem;font-weight:700;color:var(--primary)}
 .grade-btn-label{font-size:.82rem;color:var(--muted);margin-top:4px}
 
-/* ── Lista exámenes ── */
 .exam-list{display:flex;flex-direction:column;gap:12px;margin-top:20px}
 .exam-item{background:var(--card);border-radius:14px;padding:18px 20px;
   display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -101,10 +96,8 @@ label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-b
 .exam-item-info p{font-size:.82rem;color:var(--muted);margin-top:3px}
 .exam-item-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 
-/* ── Formulario registro ── */
 .registro-card{max-width:480px;margin:0 auto}
 
-/* ── Examen ── */
 .examen-wrap{max-width:740px;margin:0 auto;padding:20px}
 .timer-bar{background:#fff;border-radius:12px;padding:12px 18px;margin-bottom:16px;
   display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
@@ -123,52 +116,48 @@ label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin-b
 .opcion-label.selected{border-color:var(--primary);background:#dbeafe}
 textarea.resp-text{resize:vertical;min-height:80px}
 
-/* ── Enviado ── */
+.lectura-block{background:#eff6ff;border-left:4px solid var(--primary);border-radius:8px;
+  padding:18px 22px;font-size:.94rem;line-height:1.75;white-space:pre-wrap;color:#1a202c}
+
 .enviado-card{max-width:480px;margin:60px auto;text-align:center}
 .enviado-icon{font-size:3.5rem;margin-bottom:12px}
-.score-circle{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dk));
+.score-circle{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dk));
   color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  margin:20px auto;font-size:2rem;font-weight:700;box-shadow:0 4px 20px rgba(59,130,246,.35)}
-.score-circle small{font-size:.75rem;font-weight:500;opacity:.85}
+  margin:20px auto;font-size:1.7rem;font-weight:700;box-shadow:0 4px 20px rgba(59,130,246,.35)}
+.score-circle small{font-size:.7rem;font-weight:500;opacity:.85;margin-top:2px}
 
-/* ── Profe Dashboard ── */
 .dash-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:24px}
 .stat-card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow);text-align:center}
 .stat-card-val{font-size:2rem;font-weight:700;color:var(--primary)}
 .stat-card-lbl{font-size:.78rem;color:var(--muted);margin-top:4px}
 
-/* ── Tabs ── */
 .tabs{display:flex;gap:4px;background:var(--border);padding:4px;border-radius:12px;margin-bottom:20px;flex-wrap:wrap}
 .tab{padding:8px 16px;border-radius:9px;font-size:.87rem;font-weight:600;cursor:pointer;
   color:var(--muted);transition:.12s;border:none;font-family:inherit;background:transparent}
 .tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 6px rgba(0,0,0,.1)}
 
-/* ── Builder preguntas ── */
 .q-block{background:#f8fafc;border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;position:relative}
 .q-block-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .q-block-handle{cursor:grab;color:var(--muted);font-size:1.1rem}
+.q-block-lectura{background:#eff6ff;border-color:#bfdbfe}
 .opciones-builder{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .opcion-row{display:flex;align-items:center;gap:8px}
 .opcion-row input[type=text]{flex:1}
 .opcion-row input[type=radio]{width:auto}
 
-/* ── Respuestas / Revisión ── */
 .resp-table{width:100%;border-collapse:collapse;font-size:.88rem}
 .resp-table th{text-align:left;padding:8px 10px;background:#f8fafc;border-bottom:2px solid var(--border);font-weight:700}
 .resp-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
 .resp-table tr:hover td{background:#f8fafc}
 .resp-detail{background:#f0f4f8;border-radius:10px;padding:16px;margin-top:10px;font-size:.88rem}
 
-/* ── Admin ── */
 .admin-wrap{max-width:1000px;margin:0 auto;padding:20px}
 
-/* ── Loading ── */
 .loading{display:flex;align-items:center;justify-content:center;height:120px;color:var(--muted);gap:8px}
 .spin{width:22px;height:22px;border:3px solid var(--border);border-top-color:var(--primary);
   border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── Modal ── */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
   align-items:center;justify-content:center;padding:20px}
 .modal-bg.open{display:flex}
@@ -176,7 +165,6 @@ textarea.resp-text{resize:vertical;min-height:80px}
   max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .modal h2{font-size:1.15rem;font-weight:700;margin-bottom:18px}
 
-/* ── PIN pad ── */
 .pin-wrap{text-align:center;padding:20px}
 .pin-display{font-size:2rem;letter-spacing:.3em;min-height:1.5em;margin:12px 0;color:var(--primary)}
 .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:240px;margin:0 auto}
@@ -304,7 +292,7 @@ textarea.resp-text{resize:vertical;min-height:80px}
           <span>--</span>
           <small>puntos</small>
         </div>
-        <p id="enviado-detalle" style="color:var(--muted);font-size:.88rem"></p>
+        <div id="enviado-detalle" style="color:var(--muted);font-size:.88rem"></div>
       </div>
       <button class="btn btn-secondary" style="margin-top:20px" onclick="show('landing')">Volver al inicio</button>
     </div>
@@ -449,7 +437,7 @@ textarea.resp-text{resize:vertical;min-height:80px}
 // CONFIG
 // ═══════════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://famdtakcyifspscmphiy.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhbWR0YWtjeWlmc3BzY21waGl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTMzNDMsImV4cCI6MjA5MDg4OTM0M30.4bQVm39uwPP9W5BZrfyvmeaCdSy-Dx0yqDn2Ws8w0Fo'; // ← reemplazar con tu anon key
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhbWR0YWtjeWlmc3BzY21waGl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTMzNDMsImV4cCI6MjA5MDg4OTM0M30.4bQVm39uwPP9W5BZrfyvmeaCdSy-Dx0yqDn2Ws8w0Fo';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -474,27 +462,22 @@ const COLORES_PROFESORES = [
 // ═══════════════════════════════════════════════════════════
 const S = {
   view: 'landing',
-  // profe seleccionado (index en landingProfesores)
   profIdx: null,
   landingProfesores: [],
   gradoActual: null,
   examenActual: null,
-  // estudiante
   regData: null,
-  // autenticados
-  profe: null,      // { id, nombre, materia, color_1, color_2, icono, pin_hash }
+  profe: null,
   adminPin: null,
   pregActual: 0,
   respuestasTemp: {},
-  // timers
   timerInterval: null,
   timerSecs: 0,
   startSecs: 0,
-  // builder
   builderPreguntas: [],
   editingExamenId: null,
-  // para respuestas
   respExamenActual: null,
+  _pregsCached: null,
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -547,7 +530,6 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function xlsxExport(rows,filename){
   if(typeof XLSX !== 'undefined'){
     const ws=XLSX.utils.aoa_to_sheet(rows);
-    // Auto column widths
     ws['!cols']=rows[0].map((_,ci)=>({wch:Math.min(40,Math.max(10,...rows.map(r=>String(r[ci]||'').length)))}));
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,'Respuestas');
@@ -613,7 +595,6 @@ function renderPinPad(gridId, displayId, onSubmit, errId){
     b.onclick=()=>handleKey(n);
     grid.appendChild(b);
   });
-  // Teclado físico
   if(_pinHandlers[gridId])document.removeEventListener('keydown',_pinHandlers[gridId]);
   _pinHandlers[gridId]=(e)=>{
     const activeView=document.querySelector('.view.active');
@@ -634,26 +615,22 @@ async function cargarLanding(){
   const cont=document.getElementById('profe-cards-container');
   cont.innerHTML='<div class="loading"><div class="spin"></div> Cargando…</div>';
   try{
-    // Obtener profesores activos con exámenes activos
     const {data:profs,error}=await sb.from('profesores').select('*').eq('activo',true).order('nombre');
     if(error)throw error;
     if(!profs||profs.length===0){
       cont.innerHTML='<div class="profe-card-empty">No hay docentes activos por el momento.</div>';
       return;
     }
-    // Para cada profe, contar examenes activos
     const ids=profs.map(p=>p.id);
     const {data:examCounts}=await sb.from('examenes').select('profesor_id').eq('activo',true).in('profesor_id',ids);
     const countMap={};
     (examCounts||[]).forEach(e=>{countMap[e.profesor_id]=(countMap[e.profesor_id]||0)+1;});
-    // filtrar solo los que tienen al menos 1 examen activo
     const activos=profs.filter(p=>countMap[p.id]>0);
     if(activos.length===0){
       cont.innerHTML='<div class="profe-card-empty">No hay exámenes activos en este momento.</div>';
       return;
     }
     S.landingProfesores=activos;
-    // obtener grados disponibles por profe
     const {data:gradosData}=await sb.from('examenes').select('profesor_id,grado').eq('activo',true).in('profesor_id',activos.map(p=>p.id));
     const gradosMap={};
     (gradosData||[]).forEach(e=>{
@@ -749,7 +726,6 @@ async function abrirExamen(id){
   const {data,error}=await sb.from('examenes').select('*').eq('id',id).single();
   if(error||!data){toast('Error al cargar el examen',false);return;}
   S.examenActual=data;
-  // Llenar select de grado
   const sel=document.getElementById('reg-grado');
   sel.innerHTML=GRADOS_CONFIG.map(g=>`<option value="${g.value}">${g.label}</option>`).join('');
   if(S.gradoActual)sel.value=S.gradoActual;
@@ -762,6 +738,48 @@ async function abrirExamen(id){
   document.getElementById('reg-nombre').value='';
   document.getElementById('reg-seccion').value='';
   show('registro');
+}
+
+// ═══════════════════════════════════════════════════════════
+// NORMALIZADOR DE PREGUNTAS (con tipo lectura)
+// ═══════════════════════════════════════════════════════════
+function normalizarPreguntas(raw){
+  if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch(e){return[];}}
+  if(!Array.isArray(raw))return[];
+  const LETRA={A:0,B:1,C:2,D:3,E:4};
+  return raw.map(p=>{
+    const q={...p};
+    if(!q.enunciado&&q.texto)q.enunciado=q.texto;
+    // Normalizar tipo
+    if(q.tipo==='multiple')q.tipo='opcion_multiple';
+    else if(q.tipo==='vf')q.tipo='verdadero_falso';
+    else if(q.tipo==='seccion')q.tipo='lectura'; // ← secciones se tratan como bloques de lectura
+
+    // Opciones de OM
+    if(q.tipo==='opcion_multiple'&&Array.isArray(q.opciones)){
+      q.opciones=q.opciones.map(o=>typeof o==='string'?{texto:o}:o);
+      if(typeof q.correcta==='string'&&q.correcta.length===1&&LETRA[q.correcta.toUpperCase()]!==undefined){
+        q.correcta=LETRA[q.correcta.toUpperCase()];
+      }
+    }
+    // FIX VF: unificar .correcta ↔ .correcto
+    if(q.tipo==='verdadero_falso'){
+      if(q.correcta&&!q.correcto)q.correcto=String(q.correcta).toUpperCase();
+      if(q.correcto)q.correcto=String(q.correcto).toUpperCase();
+    }
+    // Lectura: sin puntos
+    if(q.tipo==='lectura'){
+      q.puntos=0;
+    }
+    return q;
+  });
+}
+
+function getPregs(){
+  if(!S._pregsCached){
+    S._pregsCached=normalizarPreguntas(S.examenActual.preguntas);
+  }
+  return S._pregsCached;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -784,38 +802,6 @@ function iniciarExamen(){
   show('examen');
 }
 
-function normalizarPreguntas(raw){
-  if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch(e){return[];}}
-  if(!Array.isArray(raw))return[];
-  const LETRA={A:0,B:1,C:2,D:3,E:4};
-  return raw.map(p=>{
-    const q={...p};
-    // Normalizar campo enunciado
-    if(!q.enunciado&&q.texto)q.enunciado=q.texto;
-    // Normalizar tipo
-    if(q.tipo==='multiple')q.tipo='opcion_multiple';
-    else if(q.tipo==='vf')q.tipo='verdadero_falso';
-    else if(q.tipo==='completar')q.tipo='completar';
-    else if(q.tipo==='ordenar')q.tipo='ordenar';
-    else if(q.tipo==='escala')q.tipo='escala';
-    // Normalizar opciones a objetos
-    if(q.tipo==='opcion_multiple'&&Array.isArray(q.opciones)){
-      q.opciones=q.opciones.map(o=>typeof o==='string'?{texto:o}:o);
-      // Convertir correcta letra a índice
-      if(typeof q.correcta==='string'&&q.correcta.length===1&&LETRA[q.correcta.toUpperCase()]!==undefined){
-        q.correcta=LETRA[q.correcta.toUpperCase()];
-      }
-    }
-    return q;
-  });
-}
-function getPregs(){
-  if(!S._pregsCached){
-    S._pregsCached=normalizarPreguntas(S.examenActual.preguntas);
-  }
-  return S._pregsCached;
-}
-
 function renderPreguntas(){
   S.pregActual=0;
   mostrarPregunta(0);
@@ -824,23 +810,30 @@ function renderPreguntas(){
 
 function preguntaHTML(p,i){
   const saved=S.respuestasTemp&&S.respuestasTemp[i]!==undefined?S.respuestasTemp[i]:'';
+
+  // Tipo lectura — texto contextual no evaluable
+  if(p.tipo==='lectura'){
+    const textoLectura=p.texto_base||p.poema||p.contenido||'';
+    return `<div class="lectura-block">${esc(textoLectura)}</div>
+      ${p.descripcion?`<p style="font-size:.82rem;color:var(--muted);margin-top:10px;font-style:italic">${esc(p.descripcion)}</p>`:''}`;
+  }
+
   if(p.tipo==='opcion_multiple'){
     const opts=p.opciones||[];
     return `<div class="opciones">
-      ${opts.map((o,j)=>`<label class="opcion-label" id="opc-${i}-${j}" ${String(saved)===String(j)?'class="opcion-label selected"':''}>
+      ${opts.map((o,j)=>`<label class="opcion-label ${String(saved)===String(j)?'selected':''}" id="opc-${i}-${j}">
         <input type="radio" name="preg-${i}" value="${j}" ${String(saved)===String(j)?'checked':''} onchange="marcarOpcion(${i},${j})">
         ${esc(o.texto||o)}
       </label>`).join('')}
     </div>`;
   } else if(p.tipo==='verdadero_falso'){
     return `<div class="opciones">
-      <label class="opcion-label" id="opc-${i}-0" ${saved==='V'?'style="border-color:var(--primary);background:#dbeafe"':''}>
+      <label class="opcion-label ${saved==='V'?'selected':''}" id="opc-${i}-0">
         <input type="radio" name="preg-${i}" value="V" ${saved==='V'?'checked':''} onchange="marcarOpcion(${i},'V')"> Verdadero</label>
-      <label class="opcion-label" id="opc-${i}-1" ${saved==='F'?'style="border-color:var(--primary);background:#dbeafe"':''}>
+      <label class="opcion-label ${saved==='F'?'selected':''}" id="opc-${i}-1">
         <input type="radio" name="preg-${i}" value="F" ${saved==='F'?'checked':''} onchange="marcarOpcion(${i},'F')"> Falso</label>
     </div>`;
   } else if(p.tipo==='completar'){
-    // Rellenar espacios en blanco
     const partes=(p.enunciado||'').split('___');
     let html='<div style="line-height:2.2;font-size:.97rem">';
     partes.forEach((parte,j)=>{
@@ -874,15 +867,14 @@ function preguntaHTML(p,i){
       <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);padding:0 4px">
         <span>${esc(etiq[0])}</span><span>${esc(etiq[etiq.length-1])}</span>
       </div>
-      <div style="display:flex;gap:8px;justify-content:center">
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         ${etiq.map((e,j)=>`<label style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-size:.82rem;font-weight:600;color:${String(saved)===String(j)?'var(--primary)':'var(--muted)'}">
           <div style="width:44px;height:44px;border-radius:50%;border:2px solid ${String(saved)===String(j)?'var(--primary)':'var(--border)'};background:${String(saved)===String(j)?'#dbeafe':'#fff'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;cursor:pointer" onclick="marcarOpcion(${i},${j})">${j+1}</div>
-          <span style="text-align:center;max-width:60px;line-height:1.1">${esc(e)}</span>
+          <span style="text-align:center;max-width:70px;line-height:1.1">${esc(e)}</span>
         </label>`).join('')}
       </div>
     </div>`;
   } else {
-    // texto / desarrollo
     return `<textarea class="resp-text" id="resp-texto-${i}" placeholder="Escribí tu respuesta aquí…" oninput="guardarTexto(${i})" style="min-height:100px">${saved?esc(saved):''}</textarea>`;
   }
 }
@@ -893,16 +885,32 @@ function mostrarPregunta(idx){
   S.pregActual=idx;
   const p=pregs[idx];
   const cont=document.getElementById('preguntas-container');
-  const tipo=p.tipo==='opcion_multiple'?'Opción múltiple':p.tipo==='verdadero_falso'?'Verdadero / Falso'
-    :p.tipo==='completar'?'Completar':p.tipo==='ordenar'?'Ordenar':p.tipo==='escala'?'Escala':'Desarrollo';
+
+  const esLectura=p.tipo==='lectura';
+
+  const tipo=p.tipo==='opcion_multiple'?'Opción múltiple'
+    :p.tipo==='verdadero_falso'?'Verdadero / Falso'
+    :p.tipo==='completar'?'Completar'
+    :p.tipo==='ordenar'?'Ordenar'
+    :p.tipo==='escala'?'Escala'
+    :p.tipo==='lectura'?'Texto de lectura'
+    :'Desarrollo';
+
+  // Contar solo preguntas evaluables (excluyendo lecturas)
+  const totalEval=pregs.filter(x=>x.tipo!=='lectura').length;
+  const evalIdx=pregs.slice(0,idx+1).filter(x=>x.tipo!=='lectura').length;
+
   cont.innerHTML=`
-    <div class="pregunta-block" id="preg-${idx}" style="min-height:260px">
+    <div class="pregunta-block" id="preg-${idx}" style="min-height:260px;${esLectura?'border-left:4px solid var(--primary);background:#fff':''}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div class="pregunta-num">Pregunta ${idx+1} de ${pregs.length} · ${tipo}</div>
-        <span class="badge badge-blue">${p.puntos||1} pt${(p.puntos||1)!==1?'s':''}</span>
+        <div class="pregunta-num">${esLectura
+          ? `📖 ${esc(p.enunciado||p.texto||'Texto de lectura')}`
+          : `Pregunta ${evalIdx} de ${totalEval} · ${tipo}`}</div>
+        ${esLectura?'':`<span class="badge badge-blue">${p.puntos||1} pt${(p.puntos||1)!==1?'s':''}</span>`}
       </div>
-      <div class="pregunta-enunciado" style="margin-bottom:16px">${esc(p.enunciado)}</div>
+      ${esLectura?'':`<div class="pregunta-enunciado" style="margin-bottom:16px">${esc(p.enunciado)}</div>`}
       ${preguntaHTML(p,idx)}
+      ${esLectura?`<p style="margin-top:14px;font-size:.85rem;color:var(--muted);font-style:italic">📌 Leé este texto con atención. Las próximas preguntas se refieren a él.</p>`:''}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px">
       <button class="btn btn-secondary" ${idx===0?'disabled':''} onclick="navegarPregunta(-1)">← Anterior</button>
@@ -920,22 +928,29 @@ function actualizarNavDots(){
   const idx=S.pregActual;
   const dots=document.getElementById('nav-dots');
   if(!dots)return;
-  dots.innerHTML=pregs.map((_,i)=>`
-    <button onclick="mostrarPregunta(${i})" style="width:30px;height:30px;border-radius:8px;border:1.5px solid ${i===idx?'var(--primary)':respondioIdx(i)?'var(--success)':'var(--border)'};background:${i===idx?'var(--primary)':respondioIdx(i)?'#dcfce7':'#fff'};color:${i===idx?'#fff':respondioIdx(i)?'#166634':'var(--muted)'};font-size:.8rem;font-weight:700;cursor:pointer">${i+1}</button>`).join('');
+  dots.innerHTML=pregs.map((p,i)=>{
+    if(p.tipo==='lectura'){
+      return `<button onclick="mostrarPregunta(${i})" style="width:30px;height:30px;border-radius:8px;border:1.5px solid ${i===idx?'var(--primary)':'#cbd5e1'};background:${i===idx?'var(--primary)':'#f1f5f9'};color:${i===idx?'#fff':'#64748b'};font-size:.95rem;cursor:pointer" title="Texto de lectura">📖</button>`;
+    }
+    return `<button onclick="mostrarPregunta(${i})" style="width:30px;height:30px;border-radius:8px;border:1.5px solid ${i===idx?'var(--primary)':respondioIdx(i)?'var(--success)':'var(--border)'};background:${i===idx?'var(--primary)':respondioIdx(i)?'#dcfce7':'#fff'};color:${i===idx?'#fff':respondioIdx(i)?'#166634':'var(--muted)'};font-size:.8rem;font-weight:700;cursor:pointer">${i+1}</button>`;
+  }).join('');
 }
 
 function respondioIdx(i){
   const pregs=getPregs();
   const p=pregs[i];
   if(!p)return false;
+  // Lecturas no se evalúan
+  if(p.tipo==='lectura')return true;
   const v=S.respuestasTemp&&S.respuestasTemp[i];
-  if(p.tipo==='texto'||p.tipo==='completar') return !!(v&&(Array.isArray(v)?v.some(x=>x&&x.trim()):String(v).trim()));
+  if(p.tipo==='texto'||p.tipo==='completar') return !!(v&&(Array.isArray(v)?v.some(x=>x&&String(x).trim()):String(v).trim()));
   if(p.tipo==='ordenar') return Array.isArray(v)&&v.length>0;
+  // Escala: el valor 0 ahora cuenta como respondida
+  if(p.tipo==='escala') return v!==undefined&&v!==null&&v!=='';
   return v!==undefined&&v!==null&&v!=='';
 }
 
 function navegarPregunta(dir){
-  // guardar respuesta de texto actual antes de navegar
   const pregs=getPregs();
   const p=pregs[S.pregActual];
   if(p&&p.tipo==='texto'){
@@ -985,7 +1000,7 @@ function marcarOpcion(pregIdx,val){
   const pregs=getPregs();
   const p=pregs[pregIdx];
   if(!p)return;
-  const n=p.tipo==='verdadero_falso'?2:(p.opciones||[]).length;
+  const n=p.tipo==='verdadero_falso'?2:(p.tipo==='escala'?(p.etiquetas||[]).length:(p.opciones||[]).length);
   for(let j=0;j<n;j++){
     const el=document.getElementById(`opc-${pregIdx}-${j}`);
     if(el)el.classList.toggle('selected',String(j)===String(val)||(val==='V'&&j===0)||(val==='F'&&j===1));
@@ -994,13 +1009,17 @@ function marcarOpcion(pregIdx,val){
   S.respuestasTemp[pregIdx]=val;
   actualizarProgreso();
   actualizarNavDots();
+  // Re-render para escala (cambia el círculo seleccionado)
+  if(p.tipo==='escala')mostrarPregunta(pregIdx);
 }
 
 function actualizarProgreso(){
   const pregs=getPregs();
-  const respondidas=pregs.filter((_,i)=>respondioIdx(i)).length;
+  // Solo contar preguntas evaluables (no lecturas)
+  const evaluables=pregs.filter(p=>p.tipo!=='lectura');
+  const respondidas=pregs.filter((p,i)=>p.tipo!=='lectura'&&respondioIdx(i)).length;
   const el=document.getElementById('progreso-display');
-  if(el)el.textContent=`${respondidas}/${pregs.length}`;
+  if(el)el.textContent=`${respondidas}/${evaluables.length}`;
 }
 
 function iniciarTimer(){
@@ -1026,7 +1045,6 @@ function actualizarTimerDisplay(){
 }
 
 async function enviarExamen(forced=false){
-  // guardar texto de la pregunta actual antes de enviar
   const pregsAll=getPregs();
   const pActual=pregsAll[S.pregActual];
   if(pActual&&pActual.tipo==='texto'){
@@ -1034,38 +1052,64 @@ async function enviarExamen(forced=false){
     if(el){if(!S.respuestasTemp)S.respuestasTemp={};S.respuestasTemp[S.pregActual]=el.value;}
   }
   if(!forced){
-    const respondidas=pregsAll.filter((_,i)=>respondioIdx(i)).length;
-    if(respondidas<pregsAll.length){
-      if(!confirm(`Hay ${pregsAll.length-respondidas} pregunta(s) sin responder. ¿Entregar igual?`))return;
+    const evaluables=pregsAll.filter(p=>p.tipo!=='lectura');
+    const respondidas=pregsAll.filter((p,i)=>p.tipo!=='lectura'&&respondioIdx(i)).length;
+    if(respondidas<evaluables.length){
+      if(!confirm(`Hay ${evaluables.length-respondidas} pregunta(s) sin responder. ¿Entregar igual?`))return;
     }
   }
   if(S.timerInterval)clearInterval(S.timerInterval);
+
   const pregs=pregsAll;
   const respuestas={};
-  let ptsAuto=0,ptsTexto=0,ptsMax=0;
+  let ptsAuto=0,ptsTexto=0,ptsMax=0,ptsMaxAuto=0;
+  let cantTexto=0;
+
   pregs.forEach((p,i)=>{
-    ptsMax+=(p.puntos||1);
+    // Las lecturas no aportan puntaje
+    if(p.tipo==='lectura')return;
+
+    const puntos=p.puntos||1;
+    ptsMax+=puntos;
+
     if(p.tipo==='texto'){
       const val=(S.respuestasTemp&&S.respuestasTemp[i])||'';
       respuestas[i]={tipo:'texto',respuesta:typeof val==='string'?val.trim():val};
-      ptsTexto+=(p.puntos||1);
+      ptsTexto+=puntos;
+      cantTexto++;
     } else {
       const rval=S.respuestasTemp&&S.respuestasTemp[i]!==undefined?S.respuestasTemp[i]:null;
       respuestas[i]={tipo:p.tipo,respuesta:rval};
+
       let correcto=false;
-      if(p.tipo==='verdadero_falso'){correcto=String(rval)===String(p.correcto);}
-      else if(p.tipo==='escala'){correcto=rval!==null;} // escala siempre suma (es autopercepción)
-      else if(p.tipo==='completar'||p.tipo==='ordenar'){correcto=false;} // corrección manual
+      if(p.tipo==='verdadero_falso'){
+        correcto=String(rval).toUpperCase()===String(p.correcto||'').toUpperCase();
+      }
+      else if(p.tipo==='escala'){
+        correcto=rval!==null&&rval!==undefined&&rval!=='';
+      }
+      else if(p.tipo==='completar'||p.tipo==='ordenar'){
+        correcto=false;
+      }
       else{
-        const cidx=typeof p.correcta==='number'?p.correcta:(p.opciones?p.opciones.findIndex(o=>(o.correcto||o.es_correcta||false)):-1);
+        const cidx=typeof p.correcta==='number'?p.correcta
+          :(p.opciones?p.opciones.findIndex(o=>(o.correcto||o.es_correcta||false)):-1);
         correcto=rval!==null&&parseInt(rval)===cidx;
       }
-      if(correcto)ptsAuto+=(p.puntos||1);
-      // completar/ordenar van a pts_texto (corrección manual)
-      if(p.tipo==='completar'||p.tipo==='ordenar')ptsTexto+=(p.puntos||1);
+
+      if(correcto&&p.tipo!=='completar'&&p.tipo!=='ordenar')ptsAuto+=puntos;
+
+      if(p.tipo==='completar'||p.tipo==='ordenar'){
+        ptsTexto+=puntos;
+        cantTexto++;
+      }else{
+        ptsMaxAuto+=puntos;
+      }
     }
   });
+
   const tiempoUsado=S.startSecs-S.timerSecs;
+
   try{
     await sb.from('respuestas_examenes').insert({
       examen_id:S.examenActual.id,
@@ -1075,18 +1119,29 @@ async function enviarExamen(forced=false){
       numero_orden:S.regData.numero_orden,
       respuestas,
       puntos_auto:ptsAuto,
-      puntos_texto:ptsTexto,
+      puntos_texto:0,
       puntos_total:ptsAuto,
       puntos_maximo:ptsMax,
       tiempo_usado_seg:tiempoUsado,
       texto_revisado:ptsTexto===0,
     });
-    // Mostrar resultado
+
     document.getElementById('enviado-nombre').textContent=`¡Bien, ${S.regData.nombre}!`;
     const scoreEl=document.getElementById('enviado-score');
-    const ptsMaxAuto=ptsMax-ptsTexto;
-    scoreEl.innerHTML=`<span>${ptsAuto}/${ptsMaxAuto}</span><small>pts automáticos</small>`;
-    document.getElementById('enviado-detalle').textContent=ptsTexto>0?`Hay ${pregs.filter(p=>p.tipo==='texto').length} pregunta(s) de desarrollo pendiente(s) de corrección.`:``;
+
+    if(ptsTexto>0){
+      scoreEl.innerHTML=`<span style="font-size:1.5rem">${ptsAuto}<span style="font-size:.85rem;opacity:.85">/${ptsMaxAuto}</span></span><small>auto-corregidos</small>`;
+      document.getElementById('enviado-detalle').innerHTML=
+        `<div style="background:#fef3c7;border-radius:10px;padding:14px;margin-top:12px;text-align:left">
+          <div style="font-weight:700;color:#92400e;margin-bottom:4px">⏳ Corrección pendiente</div>
+          <div style="font-size:.86rem;color:#78350f">Tu examen tiene <strong>${cantTexto} pregunta${cantTexto!==1?'s':''} de desarrollo</strong> que el/la docente revisará manualmente (${ptsTexto} pts adicionales en juego).</div>
+          <div style="font-size:.86rem;color:#78350f;margin-top:6px">Puntaje total posible: <strong>${ptsMax} pts</strong></div>
+        </div>`;
+    } else {
+      scoreEl.innerHTML=`<span>${ptsAuto}/${ptsMax}</span><small>puntos</small>`;
+      const pct=ptsMax>0?Math.round(ptsAuto/ptsMax*100):0;
+      document.getElementById('enviado-detalle').innerHTML=`<p style="margin-top:8px">Resultado final: <strong>${pct}%</strong></p>`;
+    }
     show('enviado');
   }catch(e){toast('Error al enviar el examen. Intentá de nuevo.',false);console.error(e);}
 }
@@ -1100,7 +1155,7 @@ function tabPromptIA(cont){
       <h3 style="font-weight:700;margin-bottom:4px">🤖 Generador de Prompt para IA</h3>
       <p style="color:var(--muted);font-size:.88rem;margin-bottom:20px">Completá los campos y copiá el prompt generado. Pegalo en Claude, ChatGPT o cualquier IA — te entregará el examen listo en formato JSON para importar directamente.</p>
       <div class="grid-2">
-        <div class="form-group"><label>Materia</label><input id="pg-materia" placeholder="Ej: Religión, Matemática…" oninput="generarPrompt()"></div>
+        <div class="form-group"><label>Materia</label><input id="pg-materia" placeholder="Ej: Lengua Española, Matemática…" oninput="generarPrompt()"></div>
         <div class="form-group"><label>Grado</label>
           <select id="pg-grado" onchange="generarPrompt()">
             ${GRADOS_CONFIG.map(g=>`<option value="${g.label}">${g.label}</option>`).join('')}
@@ -1108,31 +1163,32 @@ function tabPromptIA(cont){
         </div>
       </div>
       <div class="grid-2">
-        <div class="form-group"><label>Período / Unidad</label><input id="pg-periodo" placeholder="Ej: Período 3 — Ética Digital" oninput="generarPrompt()"></div>
+        <div class="form-group"><label>Período / Unidad</label><input id="pg-periodo" placeholder="Ej: Período 3 — Poesía social" oninput="generarPrompt()"></div>
         <div class="form-group"><label>Tiempo del examen</label><input id="pg-tiempo" placeholder="Ej: 45 minutos" oninput="generarPrompt()"></div>
       </div>
       <div class="form-group"><label>Temas que debe cubrir el examen</label>
-        <textarea id="pg-temas" style="min-height:72px" placeholder="Ej: Ética digital, uso responsable de redes sociales, Laudato Si, bioetica (principios de autonomía, beneficencia, no maleficencia, justicia)" oninput="generarPrompt()"></textarea>
+        <textarea id="pg-temas" style="min-height:72px" placeholder="Ej: poesía social, reportaje, informe de investigación, recursos literarios" oninput="generarPrompt()"></textarea>
       </div>
       <div class="form-group"><label>Tipos de preguntas a incluir</label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="pg-tipos">
           ${[
+            ['lectura','📖 Texto de lectura (no evaluable)'],
             ['multiple','Opción múltiple'],['vf','Verdadero / Falso'],
             ['completar','Completar'],['ordenar','Ordenar'],
             ['escala','Escala (autopercepción)'],['texto','Desarrollo / Reflexión']
           ].map(([v,l])=>`<label style="display:flex;align-items:center;gap:5px;font-size:.88rem;font-weight:500;text-transform:none;letter-spacing:0;cursor:pointer">
-            <input type="checkbox" value="${v}" checked onchange="generarPrompt()" style="width:auto"> ${l}
+            <input type="checkbox" value="${v}" ${v==='escala'||v==='ordenar'?'':'checked'} onchange="generarPrompt()" style="width:auto"> ${l}
           </label>`).join('')}
         </div>
       </div>
       <div class="form-group"><label>Cantidad de preguntas por tipo (aprox.)</label>
-        <input id="pg-cantidad" placeholder="Ej: 4 opción múltiple, 3 V/F, 2 desarrollo, 1 escala" oninput="generarPrompt()">
+        <input id="pg-cantidad" placeholder="Ej: 4 opción múltiple, 3 V/F, 2 desarrollo, 1 lectura" oninput="generarPrompt()">
       </div>
       <div class="form-group"><label>Enfoque / estilo pedagógico (opcional)</label>
-        <input id="pg-estilo" placeholder="Ej: cristiano, reflexivo, conectado con la vida real, citas bíblicas" oninput="generarPrompt()">
+        <input id="pg-estilo" placeholder="Ej: cristiano, reflexivo, conectado con la vida real" oninput="generarPrompt()">
       </div>
       <div class="form-group"><label>Instrucciones o rúbrica adicional (opcional)</label>
-        <textarea id="pg-rubrica" style="min-height:56px" placeholder="Ej: Preguntas de desarrollo evalúan autenticidad y cita bíblica. Rúbrica: Excelente 9-10pts, Satisfactorio 7-8pts…" oninput="generarPrompt()"></textarea>
+        <textarea id="pg-rubrica" style="min-height:56px" placeholder="Ej: Rúbrica: Excelente 9-10pts, Satisfactorio 7-8pts…" oninput="generarPrompt()"></textarea>
       </div>
       <div style="background:#1e3a5f;border-radius:12px;padding:16px;margin-top:4px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -1157,6 +1213,7 @@ function generarPrompt(){
   const rubrica=document.getElementById('pg-rubrica')?.value||'';
   const tipos=[...document.querySelectorAll('#pg-tipos input:checked')].map(i=>i.value);
   const tiposLabel={
+    lectura:'Texto de lectura no evaluable (tipo:"lectura", texto:"título del texto", texto_base:"contenido completo del poema/reportaje/problema"). Las preguntas siguientes se refieren a este texto.',
     multiple:'Opción múltiple (tipo:"multiple", opciones:["A","B","C","D"], correcta:"A"/"B"/"C"/"D")',
     vf:'Verdadero/Falso (tipo:"vf", correcta:"V" o "F")',
     completar:'Completar espacios (tipo:"completar", texto con ___ para cada espacio)',
@@ -1195,12 +1252,18 @@ function generarPrompt(){
   lines.push('');
   lines.push('REGLAS IMPORTANTES:');
   lines.push('- Campo "texto" para el enunciado de cada pregunta (NO usar "enunciado")');
-  lines.push('- Asignar puntos a cada pregunta (campo "puntos", suma total = 100)');
+  lines.push('- Asignar puntos a cada pregunta (campo "puntos", suma total = 100). LAS PREGUNTAS tipo "lectura" NO LLEVAN PUNTOS.');
   lines.push('- Opciones múltiple: array de strings simples, no objetos');
   lines.push('- Correcta de opción múltiple: letra mayúscula "A", "B", "C" o "D"');
   lines.push('- Preguntas de completar: usar ___ (tres guiones bajos) para cada espacio en blanco');
   lines.push('- Preguntas de escala: campo "etiquetas" con array de 5 strings');
   lines.push('- Preguntas de ordenar: campo "items" con array de strings a ordenar');
+  if(tipos.includes('lectura')){
+    lines.push('- IMPORTANTE: Para textos largos que las preguntas deben referenciar (poemas, reportajes, problemas matemáticos, fragmentos históricos), usar tipo:"lectura" con campos:');
+    lines.push('    "texto": título descriptivo (ej: "PARTE I — Poema La voz del barrio")');
+    lines.push('    "texto_base": contenido completo del texto (con \\n para saltos de línea)');
+    lines.push('  Las preguntas que vienen DESPUÉS del bloque de lectura deben referirse a ese texto.');
+  }
   lines.push('- NO incluir campos "id", "activo" ni "profesor_id"');
   lines.push('- Responder SOLO con el JSON puro, sin texto antes ni después, sin bloques de código markdown');
   if(temas){
@@ -1247,13 +1310,12 @@ function cerrarSesionProfe(){
   show('landing');
 }
 
-// ─── PROFE TABS ───
 async function profeTab(tab, btn){
   document.querySelectorAll('#profe-tabs .tab').forEach(t=>t.classList.remove('active'));
   if(btn)btn.classList.add('active');
   const cont=document.getElementById('profe-tab-content');
   if(tab==='examenes') await profeTabExamenes(cont);
-  else if(tab==='crear'){S.editingExamenId=null;show('profe-crear');renderExamenForm('profe-form-wrap',false);}
+  else if(tab==='crear'){S.editingExamenId=null;document.getElementById('profe-crear-titulo').textContent='Nuevo examen';show('profe-crear');renderExamenForm('profe-form-wrap',false);}
   else if(tab==='importar') profeTabImportar(cont);
   else if(tab==='prompt') tabPromptIA(cont);
 }
@@ -1263,9 +1325,7 @@ async function profeTabExamenes(cont){
   try{
     const {data,error}=await sb.from('examenes').select('*').eq('profesor_id',S.profe.id).order('created_at',{ascending:false});
     if(error)throw error;
-    // Stats
     const activos=(data||[]).filter(e=>e.activo).length;
-    // Get response counts
     const ids=(data||[]).map(e=>e.id);
     let pendientes=0,totalResp=0,sumPts=0,cntPts=0;
     if(ids.length>0){
@@ -1359,7 +1419,7 @@ async function profeDuplicarExamen(id){
 function profeTabImportar(cont){
   cont.innerHTML=`<div class="card" style="max-width:580px">
     <h3 style="font-weight:700;margin-bottom:12px">Importar examen desde JSON</h3>
-    <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px">Pegá el JSON de un examen exportado previamente.</p>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:14px">Pegá el JSON generado por la IA o exportado previamente.</p>
     <textarea id="import-json-txt" style="min-height:160px;font-family:monospace;font-size:.82rem" placeholder='{"titulo":"...","preguntas":[...]}'></textarea>
     <button class="btn btn-primary" style="margin-top:12px" onclick="profeImportarJSON()">Importar</button>
   </div>`;
@@ -1379,10 +1439,10 @@ async function profeImportarJSON(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// EXAM FORM (shared profe + admin)
+// EXAM FORM (shared profe + admin) — con botones para todos los tipos
 // ═══════════════════════════════════════════════════════════
 function renderExamenForm(wrapperId, isAdmin, data=null){
-  S.builderPreguntas=data&&data.preguntas?JSON.parse(JSON.stringify(data.preguntas)):[];
+  S.builderPreguntas=data&&data.preguntas?JSON.parse(JSON.stringify(normalizarPreguntas(data.preguntas))):[];
   const wrap=document.getElementById(wrapperId);
   wrap.innerHTML=`
     <div class="card" style="margin-bottom:16px">
@@ -1410,19 +1470,23 @@ function renderExamenForm(wrapperId, isAdmin, data=null){
       ${isAdmin?`<div class="form-group"><label>Docente asignado</label><select id="ef-profesor"><option value="">Sin asignar</option></select></div>`:''}
     </div>
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
         <h3 style="font-weight:700">Preguntas</h3>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-secondary btn-sm" onclick="addPregunta('opcion_multiple')">+ Opción múltiple</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="addPregunta('lectura')" style="background:#dbeafe;color:#1d4ed8">📖 Texto lectura</button>
+          <button class="btn btn-secondary btn-sm" onclick="addPregunta('opcion_multiple')">+ Op. múltiple</button>
           <button class="btn btn-secondary btn-sm" onclick="addPregunta('verdadero_falso')">+ V/F</button>
+          <button class="btn btn-secondary btn-sm" onclick="addPregunta('completar')">+ Completar</button>
+          <button class="btn btn-secondary btn-sm" onclick="addPregunta('ordenar')">+ Ordenar</button>
+          <button class="btn btn-secondary btn-sm" onclick="addPregunta('escala')">+ Escala</button>
           <button class="btn btn-secondary btn-sm" onclick="addPregunta('texto')">+ Desarrollo</button>
         </div>
       </div>
       <div id="q-builder"></div>
-      ${isAdmin?'<div class="form-group"><label>Rúbrica (opcional)</label><textarea id="ef-rubrica" style="min-height:60px">'+(esc(data?.rubrica_txt||''))+'</textarea></div>':''}
+      <div class="form-group" style="margin-top:16px"><label>Rúbrica general (opcional)</label><textarea id="ef-rubrica" style="min-height:60px">${esc(data?.rubrica_txt||'')}</textarea></div>
     </div>
     <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="show('${isAdmin?'admin':'profe'}-dash')">Cancelar</button>
+      <button class="btn btn-secondary" onclick="show('${isAdmin?'admin':'profe-dash'}')">Cancelar</button>
       <button class="btn btn-primary" onclick="guardarExamen(${isAdmin})">💾 Guardar examen</button>
     </div>`;
   if(isAdmin) cargarProfesoresSelector(data?.profesor_id);
@@ -1441,13 +1505,30 @@ function renderQBuilder(){
   const cont=document.getElementById('q-builder');
   if(!cont)return;
   if(S.builderPreguntas.length===0){
-    cont.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)">No hay preguntas aún. Usá los botones de arriba para agregar.</div>';
+    cont.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)">No hay preguntas aún. Usá los botones de arriba para agregar.<br><br>💡 <strong>Tip:</strong> Para exámenes con textos largos (poemas, reportajes), agregá primero un <strong>📖 Texto lectura</strong> y luego las preguntas que se refieren a él.</div>';
     return;
   }
   cont.innerHTML=S.builderPreguntas.map((p,i)=>renderQBlock(p,i)).join('');
 }
 
 function renderQBlock(p,i){
+  // Bloque de lectura — diseño especial
+  if(p.tipo==='lectura'){
+    return `<div class="q-block q-block-lectura">
+      <div class="q-block-header">
+        <span style="font-size:.8rem;font-weight:700;color:var(--primary)">${i+1}. 📖 Texto de lectura (no evaluable)</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="moverQ(${i},-1)">↑</button>
+          <button class="btn btn-ghost btn-sm" onclick="moverQ(${i},1)">↓</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarQ(${i})">🗑</button>
+        </div>
+      </div>
+      <input type="text" value="${esc(p.enunciado||'')}" oninput="setEnunciado(${i},this.value)" placeholder="Título del texto (ej: «La voz del barrio»)" style="margin-bottom:8px">
+      <textarea oninput="setTextoBase(${i},this.value)" style="min-height:140px;font-family:inherit" placeholder="Pegá aquí el poema, el reportaje, el problema matemático, o cualquier texto que las próximas preguntas usarán como referencia.">${esc(p.texto_base||'')}</textarea>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:6px;font-style:italic">💡 Las preguntas que coloques DESPUÉS de este bloque se referirán a este texto.</p>
+    </div>`;
+  }
+
   let extra='';
   if(p.tipo==='opcion_multiple'){
     const opts=p.opciones||[];
@@ -1461,15 +1542,46 @@ function renderQBlock(p,i){
     <button class="btn btn-ghost btn-sm" onclick="agregarOpcion(${i})" style="margin-top:6px">+ Agregar opción</button>`;
   } else if(p.tipo==='verdadero_falso'){
     extra=`<div style="display:flex;gap:10px;margin-top:6px">
-      <label><input type="radio" name="vf-${i}" ${p.correcto==='V'?'checked':''} onchange="setCorrectoVF(${i},'V')"> Verdadero</label>
-      <label><input type="radio" name="vf-${i}" ${p.correcto==='F'?'checked':''} onchange="setCorrectoVF(${i},'F')"> Falso</label>
+      <label style="display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-weight:500;font-size:.92rem"><input type="radio" name="vf-${i}" ${p.correcto==='V'?'checked':''} onchange="setCorrectoVF(${i},'V')" style="width:auto"> Verdadero</label>
+      <label style="display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-weight:500;font-size:.92rem"><input type="radio" name="vf-${i}" ${p.correcto==='F'?'checked':''} onchange="setCorrectoVF(${i},'F')" style="width:auto"> Falso</label>
+    </div>`;
+  } else if(p.tipo==='completar'){
+    extra=`<p style="font-size:.8rem;color:var(--muted);margin-top:6px">💡 Usá <code>___</code> (tres guiones bajos) en el enunciado para marcar los espacios a completar. Se corrigen manualmente.</p>`;
+  } else if(p.tipo==='ordenar'){
+    const items=p.items||[];
+    extra=`<div style="margin-top:8px"><label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase">Items a ordenar (en orden CORRECTO)</label>
+      ${items.map((it,j)=>`<div class="opcion-row" style="margin-top:4px">
+        <span style="font-weight:700;color:var(--primary);min-width:24px">${j+1}.</span>
+        <input type="text" value="${esc(it)}" oninput="setOrdenItem(${i},${j},this.value)" placeholder="Item ${j+1}">
+        <button class="btn btn-danger btn-sm" onclick="quitarOrdenItem(${i},${j})">×</button>
+      </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" onclick="agregarOrdenItem(${i})" style="margin-top:6px">+ Agregar item</button>
+    </div>`;
+  } else if(p.tipo==='escala'){
+    const etiq=p.etiquetas||['Nunca','Pocas veces','A veces','Frecuentemente','Siempre'];
+    extra=`<div style="margin-top:8px"><label style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase">Etiquetas de la escala (5 niveles)</label>
+      ${etiq.map((e,j)=>`<div class="opcion-row" style="margin-top:4px">
+        <span style="min-width:24px;font-weight:700">${j+1}</span>
+        <input type="text" value="${esc(e)}" oninput="setEscalaEtiq(${i},${j},this.value)" placeholder="Etiqueta ${j+1}">
+      </div>`).join('')}
     </div>`;
   } else {
-    extra=`<p style="font-size:.8rem;color:var(--muted);margin-top:6px">Pregunta de desarrollo – corrección manual</p>`;
+    extra=`<p style="font-size:.8rem;color:var(--muted);margin-top:6px">Pregunta de desarrollo – corrección manual</p>
+    <input type="text" value="${esc(p.rubrica||'')}" oninput="setRubrica(${i},this.value)" placeholder="Rúbrica de corrección (opcional)" style="margin-top:6px;font-size:.85rem">`;
   }
+
+  const tipoLabel={
+    opcion_multiple:'Opción múltiple',
+    verdadero_falso:'Verdadero/Falso',
+    completar:'Completar',
+    ordenar:'Ordenar',
+    escala:'Escala',
+    texto:'Desarrollo'
+  }[p.tipo]||p.tipo;
+
   return `<div class="q-block">
     <div class="q-block-header">
-      <span style="font-size:.8rem;font-weight:700;color:var(--muted)">${i+1}. ${p.tipo==='opcion_multiple'?'Opción múltiple':p.tipo==='verdadero_falso'?'Verdadero/Falso':'Desarrollo'}</span>
+      <span style="font-size:.8rem;font-weight:700;color:var(--muted)">${i+1}. ${tipoLabel}</span>
       <div style="display:flex;gap:6px;align-items:center">
         <input type="number" value="${p.puntos||1}" min="1" style="width:58px" oninput="setPuntos(${i},this.value)" title="Puntos">
         <button class="btn btn-ghost btn-sm" onclick="moverQ(${i},-1)">↑</button>
@@ -1483,9 +1595,13 @@ function renderQBlock(p,i){
 }
 
 function addPregunta(tipo){
-  const p={tipo,enunciado:'',puntos:1};
+  const p={tipo,enunciado:'',puntos:tipo==='lectura'?0:1};
   if(tipo==='opcion_multiple'){p.opciones=[{texto:'Opción A'},{texto:'Opción B'}];p.correcta=0;}
   else if(tipo==='verdadero_falso'){p.correcto='V';}
+  else if(tipo==='completar'){p.enunciado='El ___ es la capital de ___';}
+  else if(tipo==='ordenar'){p.items=['Primer paso','Segundo paso','Tercer paso'];}
+  else if(tipo==='escala'){p.etiquetas=['Nunca','Pocas veces','A veces','Frecuentemente','Siempre'];}
+  else if(tipo==='lectura'){p.enunciado='Lectura';p.texto_base='';}
   S.builderPreguntas.push(p);renderQBuilder();
 }
 function eliminarQ(i){S.builderPreguntas.splice(i,1);renderQBuilder();}
@@ -1500,6 +1616,12 @@ function setCorrectoVF(i,v){S.builderPreguntas[i].correcto=v;}
 function setOpcionTexto(i,j,v){if(S.builderPreguntas[i].opciones)S.builderPreguntas[i].opciones[j].texto=v;}
 function agregarOpcion(i){if(!S.builderPreguntas[i].opciones)S.builderPreguntas[i].opciones=[];S.builderPreguntas[i].opciones.push({texto:'Nueva opción'});renderQBuilder();}
 function quitarOpcion(i,j){if(S.builderPreguntas[i].opciones&&S.builderPreguntas[i].opciones.length>2)S.builderPreguntas[i].opciones.splice(j,1);renderQBuilder();}
+function setTextoBase(i,v){S.builderPreguntas[i].texto_base=v;}
+function setRubrica(i,v){S.builderPreguntas[i].rubrica=v;}
+function setOrdenItem(i,j,v){if(!S.builderPreguntas[i].items)S.builderPreguntas[i].items=[];S.builderPreguntas[i].items[j]=v;}
+function agregarOrdenItem(i){if(!S.builderPreguntas[i].items)S.builderPreguntas[i].items=[];S.builderPreguntas[i].items.push('Nuevo item');renderQBuilder();}
+function quitarOrdenItem(i,j){if(S.builderPreguntas[i].items&&S.builderPreguntas[i].items.length>2){S.builderPreguntas[i].items.splice(j,1);renderQBuilder();}}
+function setEscalaEtiq(i,j,v){if(!S.builderPreguntas[i].etiquetas)S.builderPreguntas[i].etiquetas=['','','','',''];S.builderPreguntas[i].etiquetas[j]=v;}
 
 async function guardarExamen(isAdmin){
   const titulo=document.getElementById('ef-titulo').value.trim();
@@ -1513,7 +1635,7 @@ async function guardarExamen(isAdmin){
     periodo:parseInt(document.getElementById('ef-periodo').value)||1,
     tiempo_minutos:parseInt(document.getElementById('ef-tiempo').value)||30,
     instrucciones:document.getElementById('ef-instrucciones').value.trim(),
-    rubrica_txt:isAdmin?(document.getElementById('ef-rubrica')?.value.trim()||''):'',
+    rubrica_txt:document.getElementById('ef-rubrica')?.value.trim()||'',
     preguntas:S.builderPreguntas,
     secciones_activas:{},
     validar_lista:document.getElementById('ef-lista').value==='true',
@@ -1534,7 +1656,6 @@ async function guardarExamen(isAdmin){
 // ═══════════════════════════════════════════════════════════
 // RESPUESTAS (shared profe + admin)
 // ═══════════════════════════════════════════════════════════
-// ─── Estado de revisión ───
 const REV={examenId:null,isAdmin:false,contId:null,data:[],pregs:[],idx:0};
 
 async function cargarRespuestas(contId, examenId, isAdmin){
@@ -1550,7 +1671,6 @@ async function cargarRespuestas(contId, examenId, isAdmin){
     const necesitaRevision=pregsRaw.some(p=>['texto','completar','ordenar'].includes(p.tipo));
     const pendientes=data.filter(r=>!r.texto_revisado).length;
 
-    // Guardar estado global para revisión
     REV.examenId=examenId;REV.isAdmin=isAdmin;REV.contId=contId;REV.data=data;REV.pregs=pregsRaw;REV.idx=0;
 
     let statsHtml='';
@@ -1610,7 +1730,6 @@ function renderModalRevision(){
   if(!r)return;
   const pregs=REV.pregs;
   const total=REV.data.length;
-  const pendientes=REV.data.filter(x=>!x.texto_revisado).length;
 
   let html=`
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:8px">
@@ -1629,6 +1748,16 @@ function renderModalRevision(){
     <div style="max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px">`;
 
   pregs.forEach((p,pi)=>{
+    // Mostrar bloques de lectura como contexto (no evaluables)
+    if(p.tipo==='lectura'){
+      const textoLectura=p.texto_base||p.poema||'';
+      html+=`<div style="background:#eff6ff;border-left:4px solid var(--primary);border-radius:8px;padding:10px 14px">
+        <div style="font-size:.75rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">📖 ${esc(p.enunciado||'Texto de lectura')}</div>
+        <div style="font-size:.84rem;color:#475569;white-space:pre-wrap;max-height:120px;overflow-y:auto">${esc(textoLectura)}</div>
+      </div>`;
+      return;
+    }
+
     const resp=r.respuestas?.[pi];
     const tipoNecesitaRevision=['texto','completar','ordenar'].includes(p.tipo);
     const detalle=r.detalle_notas||{};
@@ -1650,24 +1779,23 @@ function renderModalRevision(){
       }).join('');
     } else if(p.tipo==='verdadero_falso'){
       const rv=resp?.respuesta;
-      const esCorrecta=rv===p.correcto;
-      respHtml=`<div style="display:flex;gap:8px">
-        <div style="padding:7px 14px;border-radius:8px;font-size:.88rem;font-weight:600;border:1.5px solid ${rv==='V'?(esCorrecta&&rv==='V'?'var(--success)':'var(--danger)'):'var(--border)'};background:${rv==='V'?(esCorrecta?'#dcfce7':'#fee2e2'):'#fff'}">Verdadero ${rv==='V'?'●':''}</div>
-        <div style="padding:7px 14px;border-radius:8px;font-size:.88rem;font-weight:600;border:1.5px solid ${rv==='F'?(esCorrecta&&rv==='F'?'var(--success)':'var(--danger)'):'var(--border)'};background:${rv==='F'?(esCorrecta?'#dcfce7':'#fee2e2'):'#fff'}">Falso ${rv==='F'?'●':''}</div>
-        <div style="margin-left:4px;font-size:.82rem;color:${esCorrecta?'var(--success)':'var(--danger)'};font-weight:700;align-self:center">${rv?(esCorrecta?'✓ Correcta':'✗ Incorrecta'):'Sin respuesta'}</div>
+      const esCorrecta=String(rv).toUpperCase()===String(p.correcto||'').toUpperCase();
+      respHtml=`<div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="padding:7px 14px;border-radius:8px;font-size:.88rem;font-weight:600;border:1.5px solid ${rv==='V'?(esCorrecta?'var(--success)':'var(--danger)'):'var(--border)'};background:${rv==='V'?(esCorrecta?'#dcfce7':'#fee2e2'):'#fff'}">Verdadero ${rv==='V'?'●':''}</div>
+        <div style="padding:7px 14px;border-radius:8px;font-size:.88rem;font-weight:600;border:1.5px solid ${rv==='F'?(esCorrecta?'var(--success)':'var(--danger)'):'var(--border)'};background:${rv==='F'?(esCorrecta?'#dcfce7':'#fee2e2'):'#fff'}">Falso ${rv==='F'?'●':''}</div>
+        <div style="font-size:.82rem;color:${esCorrecta?'var(--success)':'var(--danger)'};font-weight:700;align-self:center">${rv?(esCorrecta?'✓ Correcta':'✗ Incorrecta (correcta: '+(p.correcto||'?')+')'):'Sin respuesta'}</div>
       </div>`;
     } else if(p.tipo==='escala'){
       const rv=resp?.respuesta;
       const etiq=p.etiquetas||['1','2','3','4','5'];
-      respHtml=`<div style="display:flex;gap:8px;align-items:center">
-        ${etiq.map((e,ei)=>`<div style="text-align:center"><div style="width:36px;height:36px;border-radius:50%;border:2px solid ${String(rv)===String(ei)?'var(--primary)':'var(--border)'};background:${String(rv)===String(ei)?'#dbeafe':'#fff'};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:${String(rv)===String(ei)?'var(--primary)':'var(--muted)'}">${ei+1}</div><div style="font-size:.65rem;color:var(--muted);max-width:40px;text-align:center;margin-top:2px">${esc(e)}</div></div>`).join('')}
+      respHtml=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        ${etiq.map((e,ei)=>`<div style="text-align:center"><div style="width:36px;height:36px;border-radius:50%;border:2px solid ${String(rv)===String(ei)?'var(--primary)':'var(--border)'};background:${String(rv)===String(ei)?'#dbeafe':'#fff'};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:${String(rv)===String(ei)?'var(--primary)':'var(--muted)'}">${ei+1}</div><div style="font-size:.65rem;color:var(--muted);max-width:50px;text-align:center;margin-top:2px">${esc(e)}</div></div>`).join('')}
       </div>`;
     } else {
-      // texto, completar, ordenar — mostrar respuesta y campo para puntos
       let rval=resp?.respuesta;
       if(p.tipo==='completar'&&Array.isArray(rval)){
         const partes=(p.enunciado||'').split('___');
-        rval=partes.map((parte,j)=>parte+(j<rval.length?'['+rval[j]+']':'')).join('');
+        rval=partes.map((parte,j)=>parte+(j<rval.length?'['+(rval[j]||'_')+']':'')).join('');
       } else if(p.tipo==='ordenar'&&Array.isArray(rval)&&p.items){
         rval=rval.map((origIdx,pos)=>`${pos+1}. ${p.items[origIdx]||'?'}`).join(' → ');
       }
@@ -1675,23 +1803,23 @@ function renderModalRevision(){
     }
 
     html+=`<div style="background:#f8fafc;border-radius:10px;padding:12px;border:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
         <div style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">P${pi+1} · ${p.tipo==='opcion_multiple'?'Opción múltiple':p.tipo==='verdadero_falso'?'V/F':p.tipo==='texto'?'Desarrollo':p.tipo==='completar'?'Completar':p.tipo==='ordenar'?'Ordenar':'Escala'}</div>
         <span class="badge badge-blue">${p.puntos||1} pts</span>
       </div>
       <p style="font-size:.88rem;font-weight:500;margin-bottom:8px">${esc(p.enunciado||p.texto||'')}</p>
       ${respHtml}
-      ${tipoNecesitaRevision?`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
-        <span style="font-size:.82rem;color:var(--muted)">Puntos:</span>
+      ${tipoNecesitaRevision?`<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <span style="font-size:.82rem;color:var(--muted);font-weight:600">Puntos:</span>
         <input type="number" id="rev-pts-${pi}" min="0" max="${p.puntos||1}" value="${ptsGuardados}" style="width:65px;font-size:.95rem;font-weight:700;text-align:center">
         <span style="font-size:.82rem;color:var(--muted)">/ ${p.puntos||1}</span>
-        ${p.tipo==='texto'&&p.rubrica?`<details style="flex:1"><summary style="font-size:.75rem;color:var(--primary);cursor:pointer">Ver rúbrica</summary><p style="font-size:.78rem;color:var(--muted);margin-top:4px;background:#fff;padding:8px;border-radius:6px">${esc(p.rubrica)}</p></details>`:''}
+        ${p.rubrica?`<details style="flex:1;min-width:200px"><summary style="font-size:.75rem;color:var(--primary);cursor:pointer">📋 Ver rúbrica</summary><p style="font-size:.78rem;color:var(--muted);margin-top:4px;background:#fff;padding:8px;border-radius:6px">${esc(p.rubrica)}</p></details>`:''}
       </div>`:''}
     </div>`;
   });
 
   html+=`</div>
-    <div style="display:flex;gap:8px;justify-content:space-between;margin-top:14px;align-items:center">
+    <div style="display:flex;gap:8px;justify-content:space-between;margin-top:14px;align-items:center;flex-wrap:wrap">
       <div style="display:flex;gap:6px">
         <button class="btn btn-secondary btn-sm" ${REV.idx===0?'disabled':''} onclick="REV.idx--;renderModalRevision()">← Anterior</button>
         <button class="btn btn-secondary btn-sm" ${REV.idx>=REV.data.length-1?'disabled':''} onclick="REV.idx++;renderModalRevision()">Siguiente →</button>
@@ -1723,13 +1851,11 @@ async function guardarRevision(){
   try{
     if(REV.isAdmin) await rpcAdmin('admin_guardar_nota',{p_resp_id:r.id,p_pts_texto:ptsTexto,p_pts_total:ptsTotal,p_detalle:detalle});
     else await rpcProfe('profesor_guardar_nota',{p_resp_id:r.id,p_pts_texto:ptsTexto,p_pts_total:ptsTotal,p_detalle:detalle});
-    // Actualizar local
     REV.data[REV.idx].puntos_texto=ptsTexto;
     REV.data[REV.idx].puntos_total=ptsTotal;
     REV.data[REV.idx].texto_revisado=true;
     REV.data[REV.idx].detalle_notas=detalle;
     toast('Corrección guardada ✓');
-    // Si hay siguiente pendiente, avanzar
     const siguiente=REV.data.findIndex((x,i)=>i>REV.idx&&!x.texto_revisado);
     if(siguiente>=0){REV.idx=siguiente;renderModalRevision();}
     else{cerrarModal();await cargarRespuestas(REV.contId,REV.examenId,REV.isAdmin);}
@@ -1755,10 +1881,8 @@ async function exportarRespuestas(examenId,isAdmin,fmt='xlsx'){
       return;
     }
 
-    // Excel con SheetJS — hoja resumen + hoja detalle
     if(typeof XLSX!=='undefined'){
       const wb=XLSX.utils.book_new();
-      // Hoja 1: Resumen
       const resumen=[['N°','Nombre','Grado','Sección','N° Lista','Pts Auto','Pts Texto','Pts Total','Pts Máx','%','Estado','Fecha']];
       data.forEach((r,i)=>resumen.push([i+1,r.nombre,r.grado,r.seccion||'',r.numero_orden||'',
         r.puntos_auto||0,r.puntos_texto||0,r.puntos_total||0,r.puntos_maximo||0,
@@ -1768,7 +1892,6 @@ async function exportarRespuestas(examenId,isAdmin,fmt='xlsx'){
       const ws1=XLSX.utils.aoa_to_sheet(resumen);
       ws1['!cols']=resumen[0].map((_,ci)=>({wch:Math.min(35,Math.max(8,...resumen.map(r=>String(r[ci]||'').length)))}));
       XLSX.utils.book_append_sheet(wb,ws1,'Resumen');
-      // Hoja 2: Detalle de respuestas (solo preguntas de desarrollo)
       const textoPregs=pregs.filter(p=>['texto','completar','ordenar'].includes(p.tipo));
       if(textoPregs.length>0){
         const detHeader=['Nombre','Grado','Sec.',...textoPregs.map((_,i)=>`P${i+1} - Enunciado`),...textoPregs.map((_,i)=>`P${i+1} - Respuesta`),...textoPregs.map((_,i)=>`P${i+1} - Pts`)];
@@ -1794,7 +1917,6 @@ async function exportarRespuestas(examenId,isAdmin,fmt='xlsx'){
       XLSX.writeFile(wb,titulo.slice(0,30)+'.xlsx');
       toast('Descargando Excel…');
     } else {
-      // Fallback CSV
       const rows=[['Nombre','Grado','Sección','Pts Total','Pts Máx','%','Estado']];
       data.forEach(r=>rows.push([r.nombre,r.grado,r.seccion||'',r.puntos_total||0,r.puntos_maximo||0,
         r.puntos_maximo?Math.round(r.puntos_total/r.puntos_maximo*100):0,r.texto_revisado?'Revisado':'Pendiente']));
@@ -1821,7 +1943,6 @@ function initAdminLogin(){
 
 function cerrarSesionAdmin(){S.adminPin=null;show('landing');}
 
-// ─── ADMIN TABS ───
 async function adminTab(tab,btn){
   document.querySelectorAll('#admin-tabs .tab').forEach(t=>t.classList.remove('active'));
   if(btn)btn.classList.add('active');
