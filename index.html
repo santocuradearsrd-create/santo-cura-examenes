@@ -119,6 +119,32 @@ textarea.resp-text{resize:vertical;min-height:80px}
 .lectura-block{background:#eff6ff;border-left:4px solid var(--primary);border-radius:8px;
   padding:18px 22px;font-size:.94rem;line-height:1.75;white-space:pre-wrap;color:#1a202c}
 
+/* ── Bloqueo anti-trampa durante el examen ── */
+#view-examen.active{
+  user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;
+  -webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+}
+#view-examen.active .pregunta-enunciado,
+#view-examen.active .lectura-block,
+#view-examen.active .opcion-label,
+#view-examen.active .pregunta-num{
+  user-select:none;-webkit-user-select:none;-moz-user-select:none;
+}
+/* Permitir escribir en textareas e inputs del estudiante */
+#view-examen.active textarea,
+#view-examen.active input[type="text"],
+#view-examen.active input[type="number"]{
+  user-select:text;-webkit-user-select:text;-moz-user-select:text;
+}
+.anti-cheat-warning{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  background:#dc2626;color:#fff;padding:14px 24px;border-radius:12px;
+  font-weight:700;font-size:.95rem;z-index:9999;
+  box-shadow:0 8px 24px rgba(220,38,38,.4);
+  animation:slideDown .3s ease;max-width:90vw;text-align:center;
+}
+@keyframes slideDown{from{transform:translate(-50%,-100%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
 .enviado-card{max-width:480px;margin:60px auto;text-align:center}
 .enviado-icon{font-size:3.5rem;margin-bottom:12px}
 .score-circle{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dk));
@@ -564,6 +590,167 @@ function pdfExportRespuestas(rows,titulo){
 }
 
 // ═══════════════════════════════════════════════════════════
+// ANTI-TRAMPA — bloqueo de copiar/pegar/clic derecho/atajos
+// ═══════════════════════════════════════════════════════════
+const AntiCheat = {
+  activo: false,
+  violaciones: 0,
+  cambiosPestana: 0,
+  ultimaAdvertencia: 0,
+
+  warning(msg){
+    // Evitar spam de advertencias (máx 1 cada 1.5 seg)
+    const ahora = Date.now();
+    if(ahora - this.ultimaAdvertencia < 1500) return;
+    this.ultimaAdvertencia = ahora;
+    document.querySelectorAll('.anti-cheat-warning').forEach(w=>w.remove());
+    const d = document.createElement('div');
+    d.className = 'anti-cheat-warning';
+    d.innerHTML = `⚠️ ${msg}`;
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(), 2800);
+  },
+
+  esEntradaEstudiante(target){
+    // Permitir escribir en textareas e inputs de respuesta del estudiante
+    if(!target || !target.tagName) return false;
+    const tag = target.tagName.toLowerCase();
+    if(tag === 'textarea') return true;
+    if(tag === 'input' && (target.type === 'text' || target.type === 'number')) return true;
+    return false;
+  },
+
+  blockCopy(e){
+    if(!this.activo) return;
+    e.preventDefault();
+    this.violaciones++;
+    this.warning('No se puede copiar contenido durante el examen');
+    return false;
+  },
+  blockCut(e){
+    if(!this.activo) return;
+    // Permitir cortar en inputs del estudiante
+    if(this.esEntradaEstudiante(e.target)) return;
+    e.preventDefault();
+    this.violaciones++;
+    this.warning('No se puede cortar contenido durante el examen');
+    return false;
+  },
+  blockPaste(e){
+    if(!this.activo) return;
+    e.preventDefault();
+    this.violaciones++;
+    this.warning('No se permite pegar texto en el examen — escribí tu respuesta');
+    return false;
+  },
+  blockContextMenu(e){
+    if(!this.activo) return;
+    e.preventDefault();
+    this.warning('Clic derecho deshabilitado durante el examen');
+    return false;
+  },
+  blockSelectStart(e){
+    if(!this.activo) return;
+    if(this.esEntradaEstudiante(e.target)) return;
+    e.preventDefault();
+    return false;
+  },
+  blockDragStart(e){
+    if(!this.activo) return;
+    e.preventDefault();
+    return false;
+  },
+  blockKeydown(e){
+    if(!this.activo) return;
+    const k = (e.key || '').toLowerCase();
+    const ctrl = e.ctrlKey || e.metaKey;
+    // Permitir escribir normalmente en inputs del estudiante
+    const enInput = this.esEntradaEstudiante(e.target);
+    // Atajos siempre bloqueados (incluso dentro de inputs)
+    // F12 (DevTools), Ctrl+Shift+I/J/C (DevTools), Ctrl+U (ver fuente), Ctrl+P (imprimir), Ctrl+S (guardar)
+    if(e.key === 'F12'
+      || (ctrl && e.shiftKey && ['i','j','c'].includes(k))
+      || (ctrl && ['u','p','s'].includes(k))){
+      e.preventDefault();
+      this.violaciones++;
+      this.warning('Atajo deshabilitado durante el examen');
+      return false;
+    }
+    // Bloquear Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+A fuera de inputs
+    if(ctrl && ['c','x','v','a'].includes(k)){
+      if(!enInput){
+        e.preventDefault();
+        this.violaciones++;
+        if(k === 'v') this.warning('No se permite pegar en el examen');
+        else if(k === 'c') this.warning('No se permite copiar en el examen');
+        else if(k === 'a') this.warning('No se permite seleccionar todo');
+        return false;
+      }
+      // En textareas, bloqueamos PEGAR pero permitimos los demás
+      if(k === 'v'){
+        e.preventDefault();
+        this.violaciones++;
+        this.warning('No se permite pegar texto — escribí tu respuesta');
+        return false;
+      }
+    }
+  },
+  onVisibilityChange(){
+    if(!this.activo) return;
+    if(document.hidden){
+      this.cambiosPestana++;
+      // Solo advertir cuando vuelvan
+    } else if(this.cambiosPestana > 0){
+      this.warning(`Saliste del examen ${this.cambiosPestana} vez/veces — esto queda registrado`);
+    }
+  },
+
+  // Handlers bindeados (para poder removerlos)
+  _h: {},
+
+  activar(){
+    if(this.activo) return;
+    this.activo = true;
+    this.violaciones = 0;
+    this.cambiosPestana = 0;
+    this._h.copy = (e)=>this.blockCopy(e);
+    this._h.cut = (e)=>this.blockCut(e);
+    this._h.paste = (e)=>this.blockPaste(e);
+    this._h.ctx = (e)=>this.blockContextMenu(e);
+    this._h.sel = (e)=>this.blockSelectStart(e);
+    this._h.drag = (e)=>this.blockDragStart(e);
+    this._h.key = (e)=>this.blockKeydown(e);
+    this._h.vis = ()=>this.onVisibilityChange();
+    document.addEventListener('copy', this._h.copy);
+    document.addEventListener('cut', this._h.cut);
+    document.addEventListener('paste', this._h.paste);
+    document.addEventListener('contextmenu', this._h.ctx);
+    document.addEventListener('selectstart', this._h.sel);
+    document.addEventListener('dragstart', this._h.drag);
+    document.addEventListener('keydown', this._h.key);
+    document.addEventListener('visibilitychange', this._h.vis);
+  },
+
+  desactivar(){
+    if(!this.activo) return;
+    this.activo = false;
+    document.removeEventListener('copy', this._h.copy);
+    document.removeEventListener('cut', this._h.cut);
+    document.removeEventListener('paste', this._h.paste);
+    document.removeEventListener('contextmenu', this._h.ctx);
+    document.removeEventListener('selectstart', this._h.sel);
+    document.removeEventListener('dragstart', this._h.drag);
+    document.removeEventListener('keydown', this._h.key);
+    document.removeEventListener('visibilitychange', this._h.vis);
+    document.querySelectorAll('.anti-cheat-warning').forEach(w=>w.remove());
+  },
+
+  getReporte(){
+    return { violaciones: this.violaciones, cambios_pestana: this.cambiosPestana };
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
 // PIN PAD
 // ═══════════════════════════════════════════════════════════
 const _pinHandlers={};
@@ -800,6 +987,8 @@ function iniciarExamen(){
   renderPreguntas();
   iniciarTimer();
   show('examen');
+  // Activar protección anti-trampa
+  AntiCheat.activar();
 }
 
 function renderPreguntas(){
@@ -1059,6 +1248,8 @@ async function enviarExamen(forced=false){
     }
   }
   if(S.timerInterval)clearInterval(S.timerInterval);
+  // Desactivar protección anti-trampa
+  AntiCheat.desactivar();
 
   const pregs=pregsAll;
   const respuestas={};
@@ -1109,6 +1300,9 @@ async function enviarExamen(forced=false){
   });
 
   const tiempoUsado=S.startSecs-S.timerSecs;
+  const antiCheatReporte = AntiCheat.getReporte();
+  // Guardar reporte anti-trampa dentro del objeto de respuestas con clave especial
+  respuestas._anti_cheat = antiCheatReporte;
 
   try{
     await sb.from('respuestas_examenes').insert({
@@ -1731,6 +1925,10 @@ function renderModalRevision(){
   const pregs=REV.pregs;
   const total=REV.data.length;
 
+  // Reporte anti-trampa (si existe)
+  const antiCheat = r.respuestas?._anti_cheat || {};
+  const tieneTrampa = (antiCheat.violaciones > 0) || (antiCheat.cambios_pestana > 0);
+
   let html=`
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:8px">
       <div>
@@ -1742,8 +1940,17 @@ function renderModalRevision(){
         <div style="font-weight:700;font-size:1rem;color:var(--primary)">${r.puntos_total||0} / ${r.puntos_maximo||0} pts</div>
       </div>
     </div>
+    ${tieneTrampa?`<div style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.82rem;color:#92400e">
+      ⚠️ <strong>Actividad sospechosa detectada:</strong>
+      ${antiCheat.violaciones>0?` ${antiCheat.violaciones} intento(s) de copiar/pegar/atajos bloqueados.`:''}
+      ${antiCheat.cambios_pestana>0?` Salió del examen ${antiCheat.cambios_pestana} vez/veces.`:''}
+    </div>`:''}
     <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap">
-      ${REV.data.map((x,i)=>`<button onclick="REV.idx=${i};renderModalRevision()" style="width:26px;height:26px;border-radius:6px;border:1.5px solid ${i===REV.idx?'var(--primary)':x.texto_revisado?'var(--success)':'var(--border)'};background:${i===REV.idx?'var(--primary)':x.texto_revisado?'#dcfce7':'#fff'};color:${i===REV.idx?'#fff':x.texto_revisado?'#166634':'var(--muted)'};font-size:.72rem;font-weight:700;cursor:pointer">${i+1}</button>`).join('')}
+      ${REV.data.map((x,i)=>{
+        const xCheat = x.respuestas?._anti_cheat || {};
+        const xTrampa = (xCheat.violaciones > 0) || (xCheat.cambios_pestana > 0);
+        return `<button onclick="REV.idx=${i};renderModalRevision()" style="width:26px;height:26px;border-radius:6px;border:1.5px solid ${i===REV.idx?'var(--primary)':x.texto_revisado?'var(--success)':'var(--border)'};background:${i===REV.idx?'var(--primary)':x.texto_revisado?'#dcfce7':'#fff'};color:${i===REV.idx?'#fff':x.texto_revisado?'#166634':'var(--muted)'};font-size:.72rem;font-weight:700;cursor:pointer;position:relative" title="${xTrampa?'⚠️ Actividad sospechosa':''}">${i+1}${xTrampa?'<span style="position:absolute;top:-4px;right:-4px;font-size:.6rem">⚠️</span>':''}</button>`;
+      }).join('')}
     </div>
     <div style="max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px">`;
 
